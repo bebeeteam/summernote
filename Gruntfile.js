@@ -245,7 +245,7 @@ module.exports = function (grunt) {
       dist: {
         files: [
           { src: 'lang/*', dest: 'dist/' },
-          { expand: true, cwd: 'src/icons/dist/font/', src: ['**', '!*.html'], dest: 'dist/font/' },
+          //{ expand: true, cwd: 'src/icons/dist/font/', src: ['**', '!*.html'], dest: 'dist/font/' },
           { src: 'src/icons/dist/summernote.css', dest: 'src/icons/dist/summernote.less' }
         ]
       }
@@ -287,8 +287,8 @@ module.exports = function (grunt) {
   // dist: make dist files
   grunt.registerTask('dist', [
     'clean:dist',
-    'build', 'webfont', 'lint', 'karma:dist',
-    'copy:dist', 'uglify', 'recess', 'compress'
+    'build', /*'webfont',*/ 'lint', 'karma:dist',
+    'copy:dist', 'uglify', 'recess', /*'compress'*/
   ]);
 
   // default: server
