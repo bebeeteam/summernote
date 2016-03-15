@@ -1,12 +1,12 @@
 /**
- * Super simple wysiwyg editor v0.8.1
+ * Super simple wysiwyg editor v0.8.2
  * http://summernote.org/
  *
  * summernote.js
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-03-04T10:47Z
+ * Date: 2016-03-15T11:22Z
  */
 (function (factory) {
   /* global define */
@@ -394,18 +394,18 @@
   var isEdge = /Edge\/\d+/.test(userAgent);
 
   var hasCodeMirror = !!window.CodeMirror;
-  if (!hasCodeMirror && isSupportAmd && require) {
-    if (require.hasOwnProperty('resolve')) {
+  if (!hasCodeMirror && isSupportAmd && typeof require !== 'undefined') {
+    if (typeof require.resolve !== 'undefined') {
       try {
         // If CodeMirror can't be resolved, `require.resolve` will throw an
         // exception and `hasCodeMirror` won't be set to `true`.
         require.resolve('codemirror');
         hasCodeMirror = true;
       } catch (e) {
-        hasCodeMirror = false;
+        // Do nothing.
       }
-    } else if (require.hasOwnProperty('specified')) {
-      hasCodeMirror = require.specified('codemirror');
+    } else if (typeof eval('require').specified !== 'undefined') {
+      hasCodeMirror = eval('require').specified('codemirror');
     }
   }
 
@@ -3746,8 +3746,12 @@
         }
         context.triggerEvent('keydown', event);
 
-        if (options.shortcuts && !event.isDefaultPrevented()) {
-          self.handleKeyMap(event);
+        if (!event.isDefaultPrevented()) {
+          if (options.shortcuts) {
+            self.handleKeyMap(event);
+          } else {
+            self.preventDefaultEditableShortCuts(event);
+          }
         }
       }).on('keyup', function (event) {
         context.triggerEvent('keyup', event);
@@ -3822,6 +3826,14 @@
         context.invoke(eventName);
       } else if (key.isEdit(event.keyCode)) {
         this.afterCommand();
+      }
+    };
+
+    this.preventDefaultEditableShortCuts = function (event) {
+      // B(Bold, 66) / I(Italic, 73) / U(Underline, 85)
+      if ((event.ctrlKey || event.metaKey) &&
+        list.contains([66, 73, 85], event.keyCode)) {
+        event.preventDefault();
       }
     };
 
@@ -6359,7 +6371,7 @@
 
       var body = [
         '<p class="text-center">',
-        '<a href="http://summernote.org/" target="_blank">Summernote 0.8.1</a> · ',
+        '<a href="http://summernote.org/" target="_blank">Summernote 0.8.2</a> · ',
         '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
         '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
         '</p>'
@@ -6704,7 +6716,7 @@
 
 
   $.summernote = $.extend($.summernote, {
-    version: '0.8.1',
+    version: '0.8.2',
     ui: ui,
 
     plugins: {},
