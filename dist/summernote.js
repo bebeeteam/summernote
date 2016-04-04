@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-01T12:47Z
+ * Date: 2016-04-04T15:35Z
  */
 (function (factory) {
   /* global define */
@@ -5821,11 +5821,11 @@
 
       var body = '<div class="form-group">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
-                   '<input class="note-link-text form-control" type="text" />' +
+                   '<input class="note-link-text form-control" type="text" required />' +
                  '</div>' +
                  '<div class="form-group">' +
                    '<label>' + lang.link.url + '</label>' +
-                   '<input class="note-link-url form-control" type="text" value="http://" />' +
+                   '<input class="note-link-url form-control" type="url" value="" placeholder="http://" required />' +
                  '</div>' +
                  (!options.disableLinkTarget ?
                    '<div class="checkbox">' +
@@ -5869,13 +5869,17 @@
         $linkBtn = self.$dialog.find('.note-link-btn'),
         $openInNewWindow = self.$dialog.find('input[type=checkbox]');
 
+        var toggleBtn = function () {
+          ui.toggleBtn($linkBtn, $linkText.get(0).checkValidity() && $linkUrl.get(0).checkValidity());
+        };
+
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
           $linkText.val(linkInfo.text);
 
           $linkText.on('input', function () {
-            ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
+            toggleBtn();
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
@@ -5883,12 +5887,17 @@
 
           // if no url was given, copy text to url
           if (!linkInfo.url) {
-            linkInfo.url = linkInfo.text || 'http://';
-            ui.toggleBtn($linkBtn, linkInfo.text);
+            if ($('<input>').attr('type', 'url').val(linkInfo.text).checkValidity()) {
+              //only copy if it's valid (note that empty string is valid because of missing required attribute)
+              linkInfo.url = linkInfo.text;
+            }
+            else {
+              linkInfo.url = '';
+            }
           }
 
           $linkUrl.on('input', function () {
-            ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
+            toggleBtn();
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {
@@ -5900,6 +5909,8 @@
           self.bindEnterKey($linkText, $linkBtn);
 
           $openInNewWindow.prop('checked', linkInfo.isNewWindow);
+
+          toggleBtn();
 
           $linkBtn.one('click', function (event) {
             event.preventDefault();
