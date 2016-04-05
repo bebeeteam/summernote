@@ -112,7 +112,7 @@ define([
               range: linkInfo.range,
               url: $linkUrl.val(),
               text: $linkText.val(),
-              isNewWindow: $openInNewWindow.is(':checked')
+              isNewWindow: true //los enlaces siempre se abren en nueva ventana
             });
             self.$dialog.modal('hide');
           });
