@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-05T12:09Z
+ * Date: 2016-04-05T12:38Z
  */
 (function (factory) {
   /* global define */
@@ -5890,7 +5890,7 @@
 
           // if no url was given, copy text to url
           if (!linkInfo.url) {
-            if ($('<input>').attr('type', 'url').val(linkInfo.text).checkValidity()) {
+            if ($('<input>').attr('type', 'url').val(linkInfo.text).get(0).checkValidity()) {
               //only copy if it's valid (note that empty string is valid because of missing required attribute)
               linkInfo.url = linkInfo.text;
             }
@@ -5922,7 +5922,7 @@
               range: linkInfo.range,
               url: $linkUrl.val(),
               text: $linkText.val(),
-              isNewWindow: $openInNewWindow.is(':checked')
+              isNewWindow: true //los enlaces siempre se abren en nueva ventana
             });
             self.$dialog.modal('hide');
           });
