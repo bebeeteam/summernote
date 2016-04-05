@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-04T15:35Z
+ * Date: 2016-04-05T12:09Z
  */
 (function (factory) {
   /* global define */
@@ -5070,7 +5070,10 @@
     var invertedKeyMap = func.invertObject(options.keyMap[agent.isMac ? 'mac' : 'pc']);
 
     var representShortcut = this.representShortcut = function (editorMethod) {
-      if (!options.shortcuts) {
+      if (true || !options.shortcuts) {
+        //No mostrar el texto de shortcuts aunque estén habiltados.
+        //No se pueden deshabilitar debido a un bug:
+        //https://github.com/summernote/summernote/issues/1812
         return '';
       }
       var shortcut = invertedKeyMap[editorMethod];
