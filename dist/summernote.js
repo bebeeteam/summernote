@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-05T12:38Z
+ * Date: 2016-04-06T10:03Z
  */
 (function (factory) {
   /* global define */
@@ -4373,6 +4373,10 @@
      */
     this.floatMe = this.wrapCommand(function (value) {
       var $target = $(this.restoreTarget());
+      $target.css({
+        'margin-left': value === 'right' ? '10px' : '',
+        'margin-right': value === 'left' ? '10px' : ''
+      });
       $target.css('float', value);
     });
 
