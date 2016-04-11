@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-06T10:03Z
+ * Date: 2016-04-11T12:44Z
  */
 (function (factory) {
   /* global define */
@@ -541,13 +541,16 @@
 
     var isTable = makePredByNodeName('TABLE');
 
+    var isData = makePredByNodeName('DATA');
+
     var isInline = function (node) {
       return !isBodyContainer(node) &&
              !isList(node) &&
              !isHr(node) &&
              !isPara(node) &&
              !isTable(node) &&
-             !isBlockquote(node);
+             !isBlockquote(node) &&
+             !isData(node);
     };
 
     var isList = function (node) {
@@ -629,8 +632,13 @@
       if (isText(node)) {
         return node.nodeValue.length;
       }
-
-      return node.childNodes.length;
+      
+      if (node) {
+        return node.childNodes.length;
+      }
+      
+      return 0;
+      
     };
 
     /**
@@ -1443,6 +1451,7 @@
       isPre: isPre,
       isList: isList,
       isTable: isTable,
+      isData: isData,
       isCell: isCell,
       isBlockquote: isBlockquote,
       isBodyContainer: isBodyContainer,
@@ -1837,7 +1846,7 @@
   var airEditable = renderer.create('<div class="note-editable" contentEditable="true"/>');
 
   var buttonGroup = renderer.create('<div class="note-btn-group btn-group">');
-  var button = renderer.create('<button type="button" class="note-btn btn btn-default btn-sm">', function ($node, options) {
+  var button = renderer.create('<button type="button" class="note-btn btn btn-default btn-sm" tabindex="-1">', function ($node, options) {
     if (options && options.tooltip) {
       $node.attr({
         title: options.tooltip
@@ -2689,8 +2698,10 @@
       this.isOnList = makeIsOn(dom.isList);
       // isOnAnchor: judge whether range is on anchor node or not
       this.isOnAnchor = makeIsOn(dom.isAnchor);
-      // isOnAnchor: judge whether range is on cell node or not
+      // isOnCell: judge whether range is on cell node or not
       this.isOnCell = makeIsOn(dom.isCell);
+      // isOnData: judge whether range is on data node or not
+      this.isOnData = makeIsOn(dom.isData);
 
       /**
        * @param {Function} pred
@@ -4272,19 +4283,22 @@
      */
     this.createLink = this.wrapCommand(function (linkInfo) {
       var linkUrl = linkInfo.url;
+      var linkNode = linkInfo.node;
       var linkText = linkInfo.text;
       var isNewWindow = linkInfo.isNewWindow;
       var rng = linkInfo.range || this.createRange();
-      var isTextChanged = rng.toString() !== linkText;
+      var rebuild = linkNode || rng.toString() !== linkText;
+      var contents = linkNode || linkText;
 
       if (options.onCreateLink) {
         linkUrl = options.onCreateLink(linkUrl);
       }
 
       var anchors = [];
-      if (isTextChanged) {
+      if (rebuild) {
         rng = rng.deleteContents();
-        var anchor = rng.insertNode($('<A>' + linkText + '</A>')[0]);
+        var anchor = rng.insertNode($('<A></A>')[0]);
+        $(anchor).append(contents);
         anchors.push(anchor);
       } else {
         anchors = style.styleNodes(rng, {
@@ -4326,14 +4340,45 @@
      * @return {String} [return.url=""]
      */
     this.getLinkInfo = function () {
-      var rng = this.createRange().expand(dom.isAnchor);
+      var rng, node = null, $anchor = $();
 
-      // Get the first anchor on range(for edit).
-      var $anchor = $(list.head(rng.nodes(dom.isAnchor)));
+      var $target = $(this.restoreTarget());
+      if ($target.is('img')) {
+        //img selected and clicked in link toolbar button
+        var $parent = $target.parent();
+        if ($parent.is('a')) {
+          $anchor = $parent;
+          rng = range.createFromNode($parent.get(0));
+        }
+        else {
+          rng = range.createFromNode($target.get(0));
+        }
+        node = $target.get(0);
+      }
+      else {
+        rng = this.createRange().expand(dom.isAnchor);
+
+        // Get the first anchor on range(for edit).
+        $anchor = $(list.head(rng.nodes(dom.isAnchor)));
+
+        if ($anchor.size()) {
+          if ($anchor.find('img').size()) {
+            node = $anchor.contents();
+          }
+        }
+        else {
+          rng = this.createRange().expand(dom.isImg);
+          var $img = $(list.head(rng.nodes(dom.isImg)));
+          if ($img.size()) {
+            node = $img.get(0);
+          }
+        }
+      }
 
       return {
         range: rng,
-        text: rng.toString(),
+        node: node,
+        text: node ? null : rng.toString(),
         isNewWindow: $anchor.length ? $anchor.attr('target') === '_blank' : false,
         url: $anchor.length ? $anchor.attr('href') : ''
       };
@@ -4487,7 +4532,7 @@
       //  - IE11 and Firefox: CTRL+v hook
       //  - Webkit: event.clipboardData
       if (this.needKeydownHook()) {
-        this.$paste = $('<div />').attr('contenteditable', true).css({
+        this.$paste = $('<div tabindex="-1" />').attr('contenteditable', true).css({
           position: 'absolute',
           left: -100000,
           opacity: 0
@@ -4791,6 +4836,7 @@
 
     this.destroy = function () {
       $statusbar.off();
+      $statusbar.remove();
     };
   };
 
@@ -4957,7 +5003,7 @@
   var AutoLink = function (context) {
     var self = this;
     var defaultScheme = 'http://';
-    var linkPattern = /^(https?:\/\/|ssh:\/\/|ftp:\/\/|file:\/|mailto:[A-Z0-9._%+-]+@)?(www\.)?(.+)$/i;
+    var linkPattern = /^([A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?|mailto:[A-Z0-9._%+-]+@)?(www\.)?(.+)$/i;
 
     this.events = {
       'summernote.keyup': function (we, e) {
@@ -5826,7 +5872,7 @@
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group">' +
+      var body = '<div class="form-group note-link-text-group">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
                    '<input class="note-link-text form-control" type="text" required />' +
                  '</div>' +
@@ -5876,17 +5922,19 @@
         $linkBtn = self.$dialog.find('.note-link-btn'),
         $openInNewWindow = self.$dialog.find('input[type=checkbox]');
 
-        var toggleBtn = function () {
-          ui.toggleBtn($linkBtn, $linkText.get(0).checkValidity() && $linkUrl.get(0).checkValidity());
+        var toggleSubmitBtn = function () {
+          return ui.toggleBtn($linkBtn, (linkInfo.node || $linkText.get(0).checkValidity()) && $linkUrl.get(0).checkValidity());
         };
 
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
+          self.$dialog.find('.note-link-text-group').toggleClass('hidden', !!linkInfo.node);
+
           $linkText.val(linkInfo.text);
 
           $linkText.on('input', function () {
-            toggleBtn();
+            toggleSubmitBtn();
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
@@ -5904,7 +5952,7 @@
           }
 
           $linkUrl.on('input', function () {
-            toggleBtn();
+            toggleSubmitBtn();
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {
@@ -5917,8 +5965,6 @@
 
           $openInNewWindow.prop('checked', linkInfo.isNewWindow);
 
-          toggleBtn();
-
           $linkBtn.one('click', function (event) {
             event.preventDefault();
 
@@ -5926,10 +5972,13 @@
               range: linkInfo.range,
               url: $linkUrl.val(),
               text: $linkText.val(),
-              isNewWindow: true //los enlaces siempre se abren en nueva ventana
+              isNewWindow: true, //los enlaces siempre se abren en nueva ventana
+              node: linkInfo.node
             });
             self.$dialog.modal('hide');
           });
+
+          toggleSubmitBtn();
         });
 
         ui.onDialogHidden(self.$dialog, function () {
@@ -6010,15 +6059,22 @@
       var rng = context.invoke('editor.createRange');
       if (rng.isCollapsed() && rng.isOnAnchor()) {
         var anchor = dom.ancestor(rng.sc, dom.isAnchor);
-        var href = $(anchor).attr('href');
-        this.$popover.find('a').attr('href', href).html(href);
+        var $anchor = $(anchor);
+        if ($anchor.find('img')) {
+          //don't show link popover if contains an image (prevents appear both popovers)
+          this.hide();
+        }
+        else {
+          var href = $anchor.attr('href');
+          this.$popover.find('a').attr('href', href).html(href);
 
-        var pos = dom.posFromPlaceholder(anchor);
-        this.$popover.css({
-          display: 'block',
-          left: pos.left,
-          top: pos.top
-        });
+          var pos = dom.posFromPlaceholder(anchor);
+          this.$popover.css({
+            display: 'block',
+            left: pos.left,
+            top: pos.top
+          });
+        }
       } else {
         this.hide();
       }
@@ -6739,6 +6795,7 @@
   $.summernote = $.extend($.summernote, {
     version: '0.8.2',
     ui: ui,
+    dom: dom,
 
     plugins: {},
 
@@ -6769,7 +6826,7 @@
       },
 
       buttons: {},
-      
+
       lang: 'en-US',
 
       // toolbar
@@ -6789,7 +6846,8 @@
         image: [
           ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
           ['float', ['floatLeft', 'floatRight', 'floatNone']],
-          ['remove', ['removeMedia']]
+          ['remove', ['removeMedia']],
+          ['link', ['linkDialogShow', 'unlink']]
         ],
         link: [
           ['link', ['linkDialogShow', 'unlink']]
@@ -6859,7 +6917,6 @@
         onEnter: null,
         onKeyup: null,
         onKeydown: null,
-        onSubmit: null,
         onImageUpload: null,
         onImageUploadError: null
       },
