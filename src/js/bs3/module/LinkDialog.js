@@ -12,7 +12,7 @@ define([
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group">' +
+      var body = '<div class="form-group note-link-text-group">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
                    '<input class="note-link-text form-control" type="text" required />' +
                  '</div>' +
@@ -62,17 +62,19 @@ define([
         $linkBtn = self.$dialog.find('.note-link-btn'),
         $openInNewWindow = self.$dialog.find('input[type=checkbox]');
 
-        var toggleBtn = function () {
-          ui.toggleBtn($linkBtn, $linkText.get(0).checkValidity() && $linkUrl.get(0).checkValidity());
+        var toggleSubmitBtn = function () {
+          return ui.toggleBtn($linkBtn, (linkInfo.node || $linkText.get(0).checkValidity()) && $linkUrl.get(0).checkValidity());
         };
 
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
+          self.$dialog.find('.note-link-text-group').toggleClass('hidden', !!linkInfo.node);
+
           $linkText.val(linkInfo.text);
 
           $linkText.on('input', function () {
-            toggleBtn();
+            toggleSubmitBtn();
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
@@ -90,7 +92,7 @@ define([
           }
 
           $linkUrl.on('input', function () {
-            toggleBtn();
+            toggleSubmitBtn();
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {
@@ -103,8 +105,6 @@ define([
 
           $openInNewWindow.prop('checked', linkInfo.isNewWindow);
 
-          toggleBtn();
-
           $linkBtn.one('click', function (event) {
             event.preventDefault();
 
@@ -112,10 +112,13 @@ define([
               range: linkInfo.range,
               url: $linkUrl.val(),
               text: $linkText.val(),
-              isNewWindow: true //los enlaces siempre se abren en nueva ventana
+              isNewWindow: true, //los enlaces siempre se abren en nueva ventana
+              node: linkInfo.node
             });
             self.$dialog.modal('hide');
           });
+
+          toggleSubmitBtn();
         });
 
         ui.onDialogHidden(self.$dialog, function () {
