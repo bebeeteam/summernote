@@ -110,13 +110,16 @@ define([
 
     var isTable = makePredByNodeName('TABLE');
 
+    var isData = makePredByNodeName('DATA');
+
     var isInline = function (node) {
       return !isBodyContainer(node) &&
              !isList(node) &&
              !isHr(node) &&
              !isPara(node) &&
              !isTable(node) &&
-             !isBlockquote(node);
+             !isBlockquote(node) &&
+             !isData(node);
     };
 
     var isList = function (node) {
@@ -198,8 +201,13 @@ define([
       if (isText(node)) {
         return node.nodeValue.length;
       }
-
-      return node.childNodes.length;
+      
+      if (node) {
+        return node.childNodes.length;
+      }
+      
+      return 0;
+      
     };
 
     /**
@@ -1012,6 +1020,7 @@ define([
       isPre: isPre,
       isList: isList,
       isTable: isTable,
+      isData: isData,
       isCell: isCell,
       isBlockquote: isBlockquote,
       isBodyContainer: isBodyContainer,
