@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-11T12:44Z
+ * Date: 2016-04-11T14:46Z
  */
 (function (factory) {
   /* global define */
@@ -4418,10 +4418,8 @@
      */
     this.floatMe = this.wrapCommand(function (value) {
       var $target = $(this.restoreTarget());
-      $target.css({
-        'margin-left': value === 'right' ? '10px' : '',
-        'margin-right': value === 'left' ? '10px' : ''
-      });
+      $target.toggleClass('note-float-left', value === 'left');
+      $target.toggleClass('note-float-right', value === 'right');
       $target.css('float', value);
     });
 
