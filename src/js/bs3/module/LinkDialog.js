@@ -12,7 +12,7 @@ define([
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group note-link-text-group">' +
+      var body = '<div class="form-group note-group-link-text">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
                    '<input class="note-link-text form-control" type="text" required />' +
                  '</div>' +
@@ -69,7 +69,7 @@ define([
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
-          self.$dialog.find('.note-link-text-group').toggleClass('hidden', !!linkInfo.node);
+          self.$dialog.find('.note-group-link-text').toggleClass('hidden', !!linkInfo.node);
 
           $linkText.val(linkInfo.text);
 
