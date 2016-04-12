@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-11T14:46Z
+ * Date: 2016-04-12T11:11Z
  */
 (function (factory) {
   /* global define */
@@ -5870,7 +5870,7 @@
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group note-link-text-group">' +
+      var body = '<div class="form-group note-group-link-text">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
                    '<input class="note-link-text form-control" type="text" required />' +
                  '</div>' +
@@ -5927,7 +5927,7 @@
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
-          self.$dialog.find('.note-link-text-group').toggleClass('hidden', !!linkInfo.node);
+          self.$dialog.find('.note-group-link-text').toggleClass('hidden', !!linkInfo.node);
 
           $linkText.val(linkInfo.text);
 
@@ -6309,54 +6309,45 @@
       var webmRegExp = /^.+.(webm)$/;
       var webmMatch = url.match(webmRegExp);
 
-      var $video;
+      var $elm = $('<div class="note-video-clip embed-responsive" />');
+      var $video = $('<iframe class="embed-responsive-item" frameborder="0" allowfullscreen />');
+
       if (ytMatch && ytMatch[1].length === 11) {
-        var youtubeId = ytMatch[1];
-        $video = $('<iframe>')
-            .attr('frameborder', 0)
-            .attr('src', '//www.youtube.com/embed/' + youtubeId)
-            .attr('width', '640').attr('height', '360');
+        //youtube
+        $elm.addClass('embed-responsive-16by9');
+        $video.attr('src', 'https://www.youtube.com/embed/' + ytMatch[1]);
       } else if (igMatch && igMatch[0].length) {
-        $video = $('<iframe>')
-            .attr('frameborder', 0)
+        //instagram
+        $video
             .attr('src', igMatch[0] + '/embed/')
-            .attr('width', '612').attr('height', '710')
             .attr('scrolling', 'no')
             .attr('allowtransparency', 'true');
       } else if (vMatch && vMatch[0].length) {
-        $video = $('<iframe>')
-            .attr('frameborder', 0)
-            .attr('src', vMatch[0] + '/embed/simple')
-            .attr('width', '600').attr('height', '600')
-            .attr('class', 'vine-embed');
+        //vine
+        $video.attr('src', vMatch[0] + '/embed/simple');
       } else if (vimMatch && vimMatch[3].length) {
-        $video = $('<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen>')
-            .attr('frameborder', 0)
-            .attr('src', '//player.vimeo.com/video/' + vimMatch[3])
-            .attr('width', '640').attr('height', '360');
+        //vimeo
+        $elm.addClass('embed-responsive-16by9');
+        $video.attr('src', 'https://player.vimeo.com/video/' + vimMatch[3]);
       } else if (dmMatch && dmMatch[2].length) {
-        $video = $('<iframe>')
-            .attr('frameborder', 0)
-            .attr('src', '//www.dailymotion.com/embed/video/' + dmMatch[2])
-            .attr('width', '640').attr('height', '360');
+        //dailymotion
+        $elm.addClass('embed-responsive-16by9');
+        $video.attr('src', 'https://www.dailymotion.com/embed/video/' + dmMatch[2]);
       } else if (youkuMatch && youkuMatch[1].length) {
-        $video = $('<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen>')
-            .attr('frameborder', 0)
-            .attr('height', '498')
-            .attr('width', '510')
-            .attr('src', '//player.youku.com/embed/' + youkuMatch[1]);
+        //youku
+        $video.attr('src', 'http://player.youku.com/embed/' + youkuMatch[1]);
       } else if (mp4Match || oggMatch || webmMatch) {
-        $video = $('<video controls>')
-            .attr('src', url)
-            .attr('width', '640').attr('height', '360');
+        $elm.addClass('embed-responsive-16by9');
+        $video = $('<video class="embed-responsive-item" controls>')
+            .attr('src', url);
       } else {
         // this is not a known video link. Now what, Cat? Now what?
         return false;
       }
 
-      $video.addClass('note-video-clip');
+      $elm.append($video);
 
-      return $video[0];
+      return $elm[0];
     };
 
     this.show = function () {
@@ -6844,8 +6835,8 @@
         image: [
           ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
           ['float', ['floatLeft', 'floatRight', 'floatNone']],
-          ['remove', ['removeMedia']],
-          ['link', ['linkDialogShow', 'unlink']]
+          ['link', ['linkDialogShow', 'unlink']],
+          ['remove', ['removeMedia']]
         ],
         link: [
           ['link', ['linkDialogShow', 'unlink']]
