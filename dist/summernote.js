@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-12T11:11Z
+ * Date: 2016-04-22T09:36Z
  */
 (function (factory) {
   /* global define */
@@ -6203,12 +6203,19 @@
   };
 
   var ImagePopover = function (context) {
+    var self = this;
     var ui = $.summernote.ui;
 
     var options = context.options;
 
     this.shouldInitialize = function () {
       return !list.isEmpty(options.popover.image);
+    };
+
+    this.events = {
+      'summernote.keydown': function (we, e) {
+        self.handleKeydown(e);
+      }
     };
 
     this.initialize = function () {
@@ -6224,6 +6231,10 @@
       this.$popover.remove();
     };
 
+    this.isVisible = function () {
+      return this.$popover.is(':visible');
+    };
+
     this.update = function (target) {
       if (dom.isImg(target)) {
         var pos = dom.posFromPlaceholder(target);
@@ -6232,6 +6243,9 @@
           left: pos.left,
           top: pos.top
         });
+
+        //be sure editor has focus to handle key events
+        context.invoke('editor.focus');
       } else {
         this.hide();
       }
@@ -6239,6 +6253,14 @@
 
     this.hide = function () {
       this.$popover.hide();
+    };
+
+    this.handleKeydown = function (e) {
+      if (list.contains([key.code.BACKSPACE], e.keyCode)) {
+        if (this.isVisible()) {
+          context.invoke('editor.removeMedia');
+        }
+      }
     };
   };
 
