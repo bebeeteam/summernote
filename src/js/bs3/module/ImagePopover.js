@@ -33,7 +33,7 @@ define([
       this.$popover.remove();
     };
 
-    this.isVisible = function() {
+    this.isVisible = function () {
       return this.$popover.is(':visible');
     };
 
@@ -57,7 +57,7 @@ define([
       this.$popover.hide();
     };
 
-    this.handleKeydown = function(e) {
+    this.handleKeydown = function (e) {
       if (list.contains([key.code.BACKSPACE], e.keyCode)) {
         if (this.isVisible()) {
           context.invoke('editor.removeMedia');
