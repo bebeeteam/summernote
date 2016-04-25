@@ -512,12 +512,15 @@ define([
           dom.appendChildNodes(para, list.tail(inlineSiblings));
 
           //update range
-          sc = para;
-          so = inlineSiblings.indexOf(startNode) + 1;
-          var endNodeIndex = inlineSiblings.indexOf(endNode);
-          if (endNodeIndex !== -1) {
-            ec = para;
-            eo = endNodeIndex + 1;
+          var startNodeIndex = inlineSiblings.indexOf(startNode);
+          if (startNodeIndex !== -1) {
+            sc = para;
+            so = startNodeIndex + 1;
+            var endNodeIndex = inlineSiblings.indexOf(endNode);
+            if (endNodeIndex !== -1) {
+              ec = para;
+              eo = endNodeIndex + 1;
+            }
           }
         }
 
