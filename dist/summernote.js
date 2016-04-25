@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-25T14:25Z
+ * Date: 2016-04-25T14:28Z
  */
 (function (factory) {
   /* global define */
@@ -6073,7 +6073,7 @@
       if (rng.isCollapsed() && rng.isOnAnchor()) {
         var anchor = dom.ancestor(rng.sc, dom.isAnchor);
         var $anchor = $(anchor);
-        if ($anchor.find('img')) {
+        if ($anchor.find('img').size()) {
           //don't show link popover if contains an image (prevents appear both popovers)
           this.hide();
         }
