@@ -50,7 +50,7 @@ define([
       if (rng.isCollapsed() && rng.isOnAnchor()) {
         var anchor = dom.ancestor(rng.sc, dom.isAnchor);
         var $anchor = $(anchor);
-        if ($anchor.find('img')) {
+        if ($anchor.find('img').size()) {
           //don't show link popover if contains an image (prevents appear both popovers)
           this.hide();
         }
