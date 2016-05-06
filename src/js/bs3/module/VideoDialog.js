@@ -44,7 +44,7 @@ define([
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
 
-      var igRegExp = /(?:www\.|\/\/)instagram.com\/p\/(.[a-zA-Z0-9_-]*)/;
+      var igRegExp = /(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
       var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
@@ -79,7 +79,7 @@ define([
         //instagram
         $elm.addClass('embed-responsive-1by1 note-video-instagram');
         $video
-            .attr('src', igMatch[0] + '/embed/')
+            .attr('src', 'https://instagram.com/p/' + igMatch[1] + '/embed/')
             .attr('scrolling', 'no')
             .attr('allowtransparency', 'true');
       } else if (vMatch && vMatch[0].length) {
