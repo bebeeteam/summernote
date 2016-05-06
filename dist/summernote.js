@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-05-06T11:07Z
+ * Date: 2016-05-06T11:29Z
  */
 (function (factory) {
   /* global define */
@@ -6325,7 +6325,7 @@
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
 
-      var igRegExp = /(?:www\.|\/\/)instagram.com\/p\/(.[a-zA-Z0-9_-]*)/;
+      var igRegExp = /(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
       var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
@@ -6354,33 +6354,33 @@
 
       if (ytMatch && ytMatch[1].length === 11) {
         //youtube
-        $elm.addClass('embed-responsive-16by9');
+        $elm.addClass('embed-responsive-16by9 note-video-youtube');
         $video.attr('src', 'https://www.youtube.com/embed/' + ytMatch[1]);
       } else if (igMatch && igMatch[0].length) {
         //instagram
-        $elm.addClass('embed-responsive-1by1');
+        $elm.addClass('embed-responsive-1by1 note-video-instagram');
         $video
-            .attr('src', igMatch[0] + '/embed/')
+            .attr('src', 'https://instagram.com/p/' + igMatch[1] + '/embed/')
             .attr('scrolling', 'no')
             .attr('allowtransparency', 'true');
       } else if (vMatch && vMatch[0].length) {
         //vine
-        $elm.addClass('embed-responsive-1by1');
+        $elm.addClass('embed-responsive-1by1 note-video-vine');
         $video.attr('src', vMatch[0] + '/embed/simple');
       } else if (vimMatch && vimMatch[3].length) {
         //vimeo
-        $elm.addClass('embed-responsive-16by9');
+        $elm.addClass('embed-responsive-16by9 note-video-vimeo');
         $video.attr('src', 'https://player.vimeo.com/video/' + vimMatch[3]);
       } else if (dmMatch && dmMatch[2].length) {
         //dailymotion
-        $elm.addClass('embed-responsive-16by9');
+        $elm.addClass('embed-responsive-16by9 note-video-dailymotion');
         $video.attr('src', 'https://www.dailymotion.com/embed/video/' + dmMatch[2]);
       } else if (youkuMatch && youkuMatch[1].length) {
         //youku
-        $elm.addClass('embed-responsive-4by3');
+        $elm.addClass('embed-responsive-4by3 note-video-youku');
         $video.attr('src', 'http://player.youku.com/embed/' + youkuMatch[1]);
       } else if (mp4Match || oggMatch || webmMatch) {
-        $elm.addClass('embed-responsive-16by9');
+        $elm.addClass('embed-responsive-16by9 note-video-native');
         $video = $('<video class="embed-responsive-item" controls>')
             .attr('src', url);
       } else {
