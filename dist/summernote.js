@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-05-06T08:59Z
+ * Date: 2016-05-06T11:07Z
  */
 (function (factory) {
   /* global define */
@@ -6325,13 +6325,13 @@
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
 
-      var igRegExp = /\/\/instagram.com\/p\/(.[a-zA-Z0-9_-]*)/;
+      var igRegExp = /(?:www\.|\/\/)instagram.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
-      var vRegExp = /\/\/vine.co\/v\/(.[a-zA-Z0-9]*)/;
+      var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
       var vMatch = url.match(vRegExp);
 
-      var vimRegExp = /\/\/(player.)?vimeo.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
+      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
       var vimMatch = url.match(vimRegExp);
 
       var dmRegExp = /.+dailymotion.com\/(video|hub)\/([^_]+)[^#]*(#video=([^_&]+))?/;
