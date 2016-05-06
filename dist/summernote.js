@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-04-25T14:57Z
+ * Date: 2016-05-06T08:59Z
  */
 (function (factory) {
   /* global define */
@@ -6358,12 +6358,14 @@
         $video.attr('src', 'https://www.youtube.com/embed/' + ytMatch[1]);
       } else if (igMatch && igMatch[0].length) {
         //instagram
+        $elm.addClass('embed-responsive-1by1');
         $video
             .attr('src', igMatch[0] + '/embed/')
             .attr('scrolling', 'no')
             .attr('allowtransparency', 'true');
       } else if (vMatch && vMatch[0].length) {
         //vine
+        $elm.addClass('embed-responsive-1by1');
         $video.attr('src', vMatch[0] + '/embed/simple');
       } else if (vimMatch && vimMatch[3].length) {
         //vimeo
@@ -6375,6 +6377,7 @@
         $video.attr('src', 'https://www.dailymotion.com/embed/video/' + dmMatch[2]);
       } else if (youkuMatch && youkuMatch[1].length) {
         //youku
+        $elm.addClass('embed-responsive-4by3');
         $video.attr('src', 'http://player.youku.com/embed/' + youkuMatch[1]);
       } else if (mp4Match || oggMatch || webmMatch) {
         $elm.addClass('embed-responsive-16by9');
