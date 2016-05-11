@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-05-06T11:29Z
+ * Date: 2016-05-11T07:48Z
  */
 (function (factory) {
   /* global define */
@@ -5635,7 +5635,7 @@
       context.memo('button.floatLeft', function () {
         return ui.button({
           contents: ui.icon(options.icons.alignLeft),
-          tooltip: lang.image.floatLeft,
+          tooltip: lang.paragraph.left,
           click: context.createInvokeHandler('editor.floatMe', 'left')
         }).render();
       });
@@ -5643,15 +5643,15 @@
       context.memo('button.floatRight', function () {
         return ui.button({
           contents: ui.icon(options.icons.alignRight),
-          tooltip: lang.image.floatRight,
+          tooltip: lang.paragraph.right,
           click: context.createInvokeHandler('editor.floatMe', 'right')
         }).render();
       });
 
       context.memo('button.floatNone', function () {
         return ui.button({
-          contents: ui.icon(options.icons.alignJustify),
-          tooltip: lang.image.floatNone,
+          contents: ui.icon(options.icons.alignCenter),
+          tooltip: lang.paragraph.center,
           click: context.createInvokeHandler('editor.floatMe', 'none')
         }).render();
       });
