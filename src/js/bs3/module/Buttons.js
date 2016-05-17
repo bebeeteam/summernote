@@ -38,6 +38,7 @@ define([
       this.addToolbarButtons();
       this.addImagePopoverButtons();
       this.addLinkPopoverButtons();
+      this.addVideoPopoverButtons();
       this.fontInstalledMap = {};
     };
 
@@ -559,6 +560,16 @@ define([
           contents: ui.icon(options.icons.unlink),
           tooltip: lang.link.unlink,
           click: context.createInvokeHandler('editor.unlink')
+        }).render();
+      });
+    };
+
+    this.addVideoPopoverButtons = function () {
+      context.memo('button.videoOpen', function () {
+        return ui.button({
+          contents: ui.icon(options.icons.video),
+          tooltip: lang.video.video,
+          click: context.createInvokeHandler('videoPopover.openUrl')
         }).render();
       });
     };
