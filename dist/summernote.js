@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-05-11T07:48Z
+ * Date: 2016-05-17T14:43Z
  */
 (function (factory) {
   /* global define */
@@ -1744,6 +1744,7 @@
       options = $.extend({}, $.summernote.options, options);
       options.langInfo = $.extend(true, {}, $.summernote.lang['en-US'], $.summernote.lang[options.lang]);
       options.icons = $.extend(true, {}, $.summernote.options.icons, options.icons);
+      options.popover = $.extend(true, {}, $.summernote.options.popover, options.popover);
 
       this.each(function (idx, note) {
         var $note = $(note);
@@ -4976,6 +4977,7 @@
       var $selection = this.$handle.find('.note-control-selection');
 
       context.invoke('imagePopover.update', target);
+      context.invoke('videoPopover.update', target);
 
       if (isImage) {
         var $image = $(target);
@@ -5159,6 +5161,7 @@
       this.addToolbarButtons();
       this.addImagePopoverButtons();
       this.addLinkPopoverButtons();
+      this.addVideoPopoverButtons();
       this.fontInstalledMap = {};
     };
 
@@ -5680,6 +5683,16 @@
           contents: ui.icon(options.icons.unlink),
           tooltip: lang.link.unlink,
           click: context.createInvokeHandler('editor.unlink')
+        }).render();
+      });
+    };
+
+    this.addVideoPopoverButtons = function () {
+      context.memo('button.videoOpen', function () {
+        return ui.button({
+          contents: ui.icon(options.icons.video),
+          tooltip: lang.video.video,
+          click: context.createInvokeHandler('videoPopover.openUrl')
         }).render();
       });
     };
@@ -6254,7 +6267,7 @@
     };
 
     this.update = function (target) {
-      if (dom.isImg(target)) {
+      if (dom.isImg(target) && !$(target).hasClass('note-video-thumb')) {
         var pos = dom.posFromPlaceholder(target);
         this.$popover.css({
           display: 'block',
@@ -6321,18 +6334,63 @@
     };
 
     this.createVideoNode = function (url) {
+      var def = $.Deferred();
       // video url patterns(youtube, instagram, vimeo, dailymotion, youku, mp4, ogg, webm)
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
+
+      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
+      var vimMatch = url.match(vimRegExp);
+
+      var $img = $('<img>').addClass('note-video-thumb');
+      var urlRequest = null;
+
+      if (ytMatch && ytMatch[1].length === 11) {
+        $img.attr('data-note-video', 1);
+        $img.attr('data-provider', 'youtube');
+        $img.attr('data-id', ytMatch[1]);
+        urlRequest = 'https://www.youtube.com/watch?v=' + ytMatch[1];
+      }
+      else if (vimMatch && vimMatch[3].length) {
+        $img.attr('data-note-video', 1);
+        $img.attr('data-provider', 'vimeo');
+        $img.attr('data-id', vimMatch[3]);
+        urlRequest = 'https://vimeo.com/' + vimMatch[3];
+      }
+      else {
+        def.reject();
+        return def.promise();
+      }
+
+      $.ajax({
+        url: options.videoThumbAjaxUrl.toString(),
+        data: {
+          url: urlRequest
+        },
+        dataType: 'json',
+        success: function (json) {
+          if (json.src) {
+            $img.attr('src', json.src);
+            def.resolve($img.get(0));
+          }
+          else {
+            def.reject();
+          }
+        },
+        fail: function () {
+          def.reject();
+        }
+      });
+
+      return def.promise();
+
+      /*
 
       var igRegExp = /(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
       var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
       var vMatch = url.match(vRegExp);
-
-      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
-      var vimMatch = url.match(vimRegExp);
 
       var dmRegExp = /.+dailymotion.com\/(video|hub)\/([^_]+)[^#]*(#video=([^_&]+))?/;
       var dmMatch = url.match(dmRegExp);
@@ -6349,48 +6407,56 @@
       var webmRegExp = /^.+.(webm)$/;
       var webmMatch = url.match(webmRegExp);
 
-      var $elm = $('<div class="note-video-clip embed-responsive" />');
-      var $video = $('<iframe class="embed-responsive-item" frameborder="0" allowfullscreen />');
-
+      var $video;
       if (ytMatch && ytMatch[1].length === 11) {
-        //youtube
-        $elm.addClass('embed-responsive-16by9 note-video-youtube');
-        $video.attr('src', 'https://www.youtube.com/embed/' + ytMatch[1]);
+        var youtubeId = ytMatch[1];
+        $video = $('<iframe>')
+            .attr('frameborder', 0)
+            .attr('src', '//www.youtube.com/embed/' + youtubeId)
+            .attr('width', '640').attr('height', '360');
       } else if (igMatch && igMatch[0].length) {
-        //instagram
-        $elm.addClass('embed-responsive-1by1 note-video-instagram');
-        $video
+        $video = $('<iframe>')
+            .attr('frameborder', 0)
             .attr('src', 'https://instagram.com/p/' + igMatch[1] + '/embed/')
+            .attr('width', '612').attr('height', '710')
             .attr('scrolling', 'no')
             .attr('allowtransparency', 'true');
       } else if (vMatch && vMatch[0].length) {
-        //vine
-        $elm.addClass('embed-responsive-1by1 note-video-vine');
-        $video.attr('src', vMatch[0] + '/embed/simple');
+        $video = $('<iframe>')
+            .attr('frameborder', 0)
+            .attr('src', vMatch[0] + '/embed/simple')
+            .attr('width', '600').attr('height', '600')
+            .attr('class', 'vine-embed');
       } else if (vimMatch && vimMatch[3].length) {
-        //vimeo
-        $elm.addClass('embed-responsive-16by9 note-video-vimeo');
-        $video.attr('src', 'https://player.vimeo.com/video/' + vimMatch[3]);
+        $video = $('<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen>')
+            .attr('frameborder', 0)
+            .attr('src', '//player.vimeo.com/video/' + vimMatch[3])
+            .attr('width', '640').attr('height', '360');
       } else if (dmMatch && dmMatch[2].length) {
-        //dailymotion
-        $elm.addClass('embed-responsive-16by9 note-video-dailymotion');
-        $video.attr('src', 'https://www.dailymotion.com/embed/video/' + dmMatch[2]);
+        $video = $('<iframe>')
+            .attr('frameborder', 0)
+            .attr('src', '//www.dailymotion.com/embed/video/' + dmMatch[2])
+            .attr('width', '640').attr('height', '360');
       } else if (youkuMatch && youkuMatch[1].length) {
-        //youku
-        $elm.addClass('embed-responsive-4by3 note-video-youku');
-        $video.attr('src', 'http://player.youku.com/embed/' + youkuMatch[1]);
+        $video = $('<iframe webkitallowfullscreen mozallowfullscreen allowfullscreen>')
+            .attr('frameborder', 0)
+            .attr('height', '498')
+            .attr('width', '510')
+            .attr('src', '//player.youku.com/embed/' + youkuMatch[1]);
       } else if (mp4Match || oggMatch || webmMatch) {
-        $elm.addClass('embed-responsive-16by9 note-video-native');
-        $video = $('<video class="embed-responsive-item" controls>')
-            .attr('src', url);
+        $video = $('<video controls>')
+            .attr('src', url)
+            .attr('width', '640').attr('height', '360');
       } else {
         // this is not a known video link. Now what, Cat? Now what?
         return false;
       }
 
-      $elm.append($video);
+      $video.addClass('note-video-clip');
 
-      return $elm[0];
+      return $video[0];
+
+      */
     };
 
     this.show = function () {
@@ -6402,12 +6468,10 @@
         context.invoke('editor.restoreRange');
 
         // build node
-        var $node = self.createVideoNode(url);
-
-        if ($node) {
+        self.createVideoNode(url).done(function ($node) {
           // insert video node
           context.invoke('editor.insertNode', $node);
-        }
+        });
       }).fail(function () {
         context.invoke('editor.restoreRange');
       });
@@ -6451,6 +6515,85 @@
 
         ui.showDialog(self.$dialog);
       });
+    };
+  };
+
+  var VideoPopover = function (context) {
+    var self = this;
+    var ui = $.summernote.ui;
+
+    var options = context.options;
+
+    this.shouldInitialize = function () {
+      return !list.isEmpty(options.popover.video);
+    };
+
+    this.events = {
+      'summernote.keydown': function (we, e) {
+        self.handleKeydown(e);
+      }
+    };
+
+    this.initialize = function () {
+      this.$popover = ui.popover({
+        className: 'note-video-popover'
+      }).render().appendTo('body');
+      var $content = this.$popover.find('.popover-content');
+
+      context.invoke('buttons.build', $content, options.popover.video);
+    };
+
+    this.destroy = function () {
+      this.$popover.remove();
+    };
+
+    this.isVisible = function () {
+      return this.$popover.is(':visible');
+    };
+
+    this.update = function (target) {
+      if ($(target).hasClass('note-video-thumb')) {
+        var pos = dom.posFromPlaceholder(target);
+        this.$popover.css({
+          display: 'block',
+          left: pos.left,
+          top: pos.top
+        });
+
+        //be sure editor has focus to handle key events
+        context.invoke('editor.focus');
+      } else {
+        this.hide();
+      }
+    };
+
+    this.hide = function () {
+      this.$popover.hide();
+    };
+
+    this.handleKeydown = function (e) {
+      if (list.contains([key.code.BACKSPACE], e.keyCode)) {
+        if (this.isVisible()) {
+          context.invoke('editor.removeMedia');
+        }
+      }
+    };
+
+    this.openUrl = function () {
+      var $target = $(context.invoke('editor.restoreTarget'));
+      var provider = $target.attr('data-provider');
+      var url = null;
+      var id = $target.attr('data-id');
+      if (provider === 'youtube') {
+        url = 'https://youtu.be/' + id;
+      }
+      else if (provider === 'vimeo') {
+        url = 'https://vimeo.com/' + id;
+      }
+
+      if (url) {
+        window.open(url);
+      }
     };
   };
 
@@ -6853,6 +6996,7 @@
         'imageDialog': ImageDialog,
         'imagePopover': ImagePopover,
         'videoDialog': VideoDialog,
+        'videoPopover': VideoPopover,
         'helpDialog': HelpDialog,
         'airPopover': AirPopover
       },
@@ -6879,6 +7023,10 @@
           ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
           ['float', ['floatLeft', 'floatRight', 'floatNone']],
           ['link', ['linkDialogShow', 'unlink']],
+          ['remove', ['removeMedia']]
+        ],
+        video: [
+          ['link', ['videoOpen']],
           ['remove', ['removeMedia']]
         ],
         link: [
