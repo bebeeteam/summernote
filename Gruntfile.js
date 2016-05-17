@@ -288,7 +288,7 @@ module.exports = function (grunt) {
   grunt.registerTask('dist', [
     'clean:dist',
     'build', /*'webfont',*/ 'lint', 'karma:dist',
-    'copy:dist', 'uglify', 'recess', /*'compress'*/
+    'copy:dist', 'uglify', 'recess'/*, 'compress'*/
   ]);
 
   // default: server
