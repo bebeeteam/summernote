@@ -40,18 +40,63 @@ define([
     };
 
     this.createVideoNode = function (url) {
+      var def = $.Deferred();
       // video url patterns(youtube, instagram, vimeo, dailymotion, youku, mp4, ogg, webm)
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
+
+      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
+      var vimMatch = url.match(vimRegExp);
+
+      var $img = $('<img>').addClass('note-video-thumb');
+      var urlRequest = null;
+
+      if (ytMatch && ytMatch[1].length === 11) {
+        $img.attr('data-note-video', 1);
+        $img.attr('data-provider', 'youtube');
+        $img.attr('data-id', ytMatch[1]);
+        urlRequest = 'https://www.youtube.com/watch?v=' + ytMatch[1];
+      }
+      else if (vimMatch && vimMatch[3].length) {
+        $img.attr('data-note-video', 1);
+        $img.attr('data-provider', 'vimeo');
+        $img.attr('data-id', vimMatch[3]);
+        urlRequest = 'https://vimeo.com/' + vimMatch[3];
+      }
+      else {
+        def.reject();
+        return def.promise();
+      }
+
+      $.ajax({
+        url: options.videoThumbAjaxUrl.toString(),
+        data: {
+          url: urlRequest
+        },
+        dataType: 'json',
+        success: function (json) {
+          if (json.src) {
+            $img.attr('src', json.src);
+            def.resolve($img.get(0));
+          }
+          else {
+            def.reject();
+          }
+        },
+        fail: function () {
+          def.reject();
+        }
+      });
+
+      return def.promise();
+
+      /*
 
       var igRegExp = /(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
       var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
       var vMatch = url.match(vRegExp);
-
-      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
-      var vimMatch = url.match(vimRegExp);
 
       var dmRegExp = /.+dailymotion.com\/(video|hub)\/([^_]+)[^#]*(#video=([^_&]+))?/;
       var dmMatch = url.match(dmRegExp);
@@ -116,6 +161,8 @@ define([
       $video.addClass('note-video-clip');
 
       return $video[0];
+
+      */
     };
 
     this.show = function () {
@@ -127,12 +174,10 @@ define([
         context.invoke('editor.restoreRange');
 
         // build node
-        var $node = self.createVideoNode(url);
-
-        if ($node) {
+        self.createVideoNode(url).done(function ($node) {
           // insert video node
           context.invoke('editor.insertNode', $node);
-        }
+        });
       }).fail(function () {
         context.invoke('editor.restoreRange');
       });

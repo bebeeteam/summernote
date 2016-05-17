@@ -73,6 +73,7 @@ define([
       var $selection = this.$handle.find('.note-control-selection');
 
       context.invoke('imagePopover.update', target);
+      context.invoke('videoPopover.update', target);
 
       if (isImage) {
         var $image = $(target);

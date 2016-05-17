@@ -20,6 +20,7 @@ define([
       options = $.extend({}, $.summernote.options, options);
       options.langInfo = $.extend(true, {}, $.summernote.lang['en-US'], $.summernote.lang[options.lang]);
       options.icons = $.extend(true, {}, $.summernote.options.icons, options.icons);
+      options.popover = $.extend(true, {}, $.summernote.options.popover, options.popover);
 
       this.each(function (idx, note) {
         var $note = $(note);

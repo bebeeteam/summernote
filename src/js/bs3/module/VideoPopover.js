@@ -4,14 +4,14 @@ define([
   'summernote/base/core/dom',
   'summernote/base/core/key'
 ], function (func, list, dom, key) {
-  var ImagePopover = function (context) {
+  var VideoPopover = function (context) {
     var self = this;
     var ui = $.summernote.ui;
 
     var options = context.options;
 
     this.shouldInitialize = function () {
-      return !list.isEmpty(options.popover.image);
+      return !list.isEmpty(options.popover.video);
     };
 
     this.events = {
@@ -22,11 +22,11 @@ define([
 
     this.initialize = function () {
       this.$popover = ui.popover({
-        className: 'note-image-popover'
+        className: 'note-video-popover'
       }).render().appendTo('body');
       var $content = this.$popover.find('.popover-content');
 
-      context.invoke('buttons.build', $content, options.popover.image);
+      context.invoke('buttons.build', $content, options.popover.video);
     };
 
     this.destroy = function () {
@@ -38,7 +38,7 @@ define([
     };
 
     this.update = function (target) {
-      if (dom.isImg(target) && !$(target).hasClass('note-video-thumb')) {
+      if ($(target).hasClass('note-video-thumb')) {
         var pos = dom.posFromPlaceholder(target);
         this.$popover.css({
           display: 'block',
@@ -64,7 +64,24 @@ define([
         }
       }
     };
+
+    this.openUrl = function () {
+      var $target = $(context.invoke('editor.restoreTarget'));
+      var provider = $target.attr('data-provider');
+      var url = null;
+      var id = $target.attr('data-id');
+      if (provider === 'youtube') {
+        url = 'https://youtu.be/' + id;
+      }
+      else if (provider === 'vimeo') {
+        url = 'https://vimeo.com/' + id;
+      }
+
+      if (url) {
+        window.open(url);
+      }
+    };
   };
 
-  return ImagePopover;
+  return VideoPopover;
 });
