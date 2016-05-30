@@ -350,7 +350,7 @@ define([
           if (typeof param === 'string') {
             $image.attr('data-filename', param);
           }
-          $image.css('width', Math.min($editable.width(), $image.width()));
+          //$image.css('width', Math.min($editable.width(), $image.width()));
         }
 
         $image.show();
@@ -729,7 +729,7 @@ define([
      */
     this.resizeTo = function (pos, $target, bKeepRatio) {
       var imageSize;
-      if (bKeepRatio) {
+      if (false && bKeepRatio) {
         var newRatio = pos.y / pos.x;
         var ratio = $target.data('ratio');
         imageSize = {
@@ -738,10 +738,16 @@ define([
         };
       } else {
         imageSize = {
-          width: pos.x,
-          height: pos.y
+          width: pos.x
+          //height: pos.y
         };
       }
+
+      var $parent = $target.parent();
+      while ($parent.css('display') !== 'block' && $parent.parent().length) {
+        $parent = $parent.parent();
+      }
+      imageSize.width = parseInt((imageSize.width / $parent.width()) * 100, 10) + '%';
 
       $target.css(imageSize);
     };
