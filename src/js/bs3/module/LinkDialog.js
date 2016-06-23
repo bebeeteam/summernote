@@ -100,6 +100,8 @@ define([
             }
           }).val(linkInfo.url).trigger('focus');
 
+          ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
+
           self.bindEnterKey($linkUrl, $linkBtn);
           self.bindEnterKey($linkText, $linkBtn);
 

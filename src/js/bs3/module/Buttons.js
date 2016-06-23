@@ -15,13 +15,16 @@ define([
     var invertedKeyMap = func.invertObject(options.keyMap[agent.isMac ? 'mac' : 'pc']);
 
     var representShortcut = this.representShortcut = function (editorMethod) {
-      if (true || !options.shortcuts) {
-        //No mostrar el texto de shortcuts aunque estén habiltados.
-        //No se pueden deshabilitar debido a un bug:
-        //https://github.com/summernote/summernote/issues/1812
+      //No mostrar el texto de shortcuts aunque estén habiltados.
+      //No se pueden deshabilitar debido a un bug:
+      //https://github.com/summernote/summernote/issues/1812
+      return '';
+
+      var shortcut = invertedKeyMap[editorMethod];
+      if (!options.shortcuts || !shortcut) {
         return '';
       }
-      var shortcut = invertedKeyMap[editorMethod];
+
       if (agent.isMac) {
         shortcut = shortcut.replace('CMD', '⌘').replace('SHIFT', '⇧');
       }
@@ -78,7 +81,7 @@ define([
               var tag = item.tag;
               var title = item.title;
               var style = item.style ? ' style="' + item.style + '" ' : '';
-              var className = item.className ? ' className="' + item.className + '"' : '';
+              var className = item.className ? ' class="' + item.className + '"' : '';
 
               return '<' + tag + style + className + '>' + title + '</' + tag +  '>';
             },
