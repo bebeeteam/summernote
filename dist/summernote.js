@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-05-30T16:18Z
+ * Date: 2016-06-23T08:42Z
  */
 (function (factory) {
   /* global define */
@@ -4309,6 +4309,11 @@
       var rebuild = linkNode || rng.toString() !== linkText;
       var contents = linkNode || linkText;
 
+      // handle spaced urls from input
+      if (typeof linkUrl === 'string') {
+        linkUrl = linkUrl.trim();
+      }
+
       if (options.onCreateLink) {
         linkUrl = options.onCreateLink(linkUrl);
       }
@@ -4328,6 +4333,10 @@
       }
 
       $.each(anchors, function (idx, anchor) {
+        // if url doesn't match an URL schema, set http:// as default
+        linkUrl = /^[A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?/.test(linkUrl) ?
+          linkUrl : 'http://' + linkUrl;
+
         $(anchor).attr('href', linkUrl);
         if (isNewWindow) {
           $(anchor).attr('target', '_blank');
@@ -5144,13 +5153,18 @@
     var invertedKeyMap = func.invertObject(options.keyMap[agent.isMac ? 'mac' : 'pc']);
 
     var representShortcut = this.representShortcut = function (editorMethod) {
-      if (true || !options.shortcuts) {
-        //No mostrar el texto de shortcuts aunque estén habiltados.
-        //No se pueden deshabilitar debido a un bug:
-        //https://github.com/summernote/summernote/issues/1812
+      //No mostrar el texto de shortcuts aunque estén habiltados.
+      //No se pueden deshabilitar debido a un bug:
+      //https://github.com/summernote/summernote/issues/1812
+      if (true) {
         return '';
       }
+
       var shortcut = invertedKeyMap[editorMethod];
+      if (!options.shortcuts || !shortcut) {
+        return '';
+      }
+
       if (agent.isMac) {
         shortcut = shortcut.replace('CMD', '⌘').replace('SHIFT', '⇧');
       }
@@ -5207,7 +5221,7 @@
               var tag = item.tag;
               var title = item.title;
               var style = item.style ? ' style="' + item.style + '" ' : '';
-              var className = item.className ? ' className="' + item.className + '"' : '';
+              var className = item.className ? ' class="' + item.className + '"' : '';
 
               return '<' + tag + style + className + '>' + title + '</' + tag +  '>';
             },
@@ -5969,10 +5983,10 @@
           $linkText.val(linkInfo.text);
 
           $linkText.on('input', function () {
-            toggleSubmitBtn();
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
+            toggleSubmitBtn();
           });
 
           // if no url was given, copy text to url
@@ -5987,13 +6001,15 @@
           }
 
           $linkUrl.on('input', function () {
-            toggleSubmitBtn();
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {
               $linkText.val($linkUrl.val());
             }
+            toggleSubmitBtn();
           }).val(linkInfo.url).trigger('focus');
+
+          ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
 
           self.bindEnterKey($linkUrl, $linkBtn);
           self.bindEnterKey($linkText, $linkBtn);
