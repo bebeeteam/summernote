@@ -74,7 +74,6 @@ define([
           $linkText.val(linkInfo.text);
 
           $linkText.on('input', function () {
-            toggleBtn();
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
@@ -93,7 +92,6 @@ define([
           }
 
           $linkUrl.on('input', function () {
-            toggleBtn();
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {

@@ -18,7 +18,9 @@ define([
       //No mostrar el texto de shortcuts aunque estén habiltados.
       //No se pueden deshabilitar debido a un bug:
       //https://github.com/summernote/summernote/issues/1812
-      return '';
+      if (true) {
+        return '';
+      }
 
       var shortcut = invertedKeyMap[editorMethod];
       if (!options.shortcuts || !shortcut) {
