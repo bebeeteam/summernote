@@ -20,7 +20,7 @@ define([
         size: 'Font Size'
       },
       image: {
-        image: 'Picture',
+        image: 'Image',
         insert: 'Insert Image',
         resizeFull: 'Resize Full',
         resizeHalf: 'Resize Half',

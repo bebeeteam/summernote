@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-06-23T08:42Z
+ * Date: 2016-08-05T09:38Z
  */
 (function (factory) {
   /* global define */
@@ -2044,7 +2044,7 @@
         size: 'Font Size'
       },
       image: {
-        image: 'Picture',
+        image: 'Image',
         insert: 'Insert Image',
         resizeFull: 'Resize Full',
         resizeHalf: 'Resize Half',
