@@ -44,7 +44,7 @@ define([
         video: 'Video',
         videoLink: 'Video Link',
         insert: 'Insert Video',
-        url: 'Video URL?',
+        url: 'Type the video URL',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion or Youku)'
       },
       link: {
@@ -53,7 +53,7 @@ define([
         unlink: 'Unlink',
         edit: 'Edit',
         textToDisplay: 'Text to display',
-        url: 'To what URL should this link go?',
+        url: 'Enter a URL',
         openInNewWindow: 'Open in new window'
       },
       table: {
@@ -72,10 +72,11 @@ define([
         h3: 'Header 3',
         h4: 'Header 4',
         h5: 'Header 5',
-        h6: 'Header 6'
+        h6: 'Header 6',
+        p: 'Paragraph'
       },
       lists: {
-        unordered: 'Unordered list',
+        unordered: 'Bulleted list',
         ordered: 'Ordered list'
       },
       options: {
