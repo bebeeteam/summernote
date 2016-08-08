@@ -36,7 +36,7 @@
       },
       video: {
         video: 'Vidéo',
-        videoLink: 'Lien vidéo',
+        videoLink: 'Introduis le lien de la vidéo',
         insert: 'Insérer une vidéo',
         url: 'URL de la vidéo',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion ou Youku)'
@@ -47,7 +47,7 @@
         unlink: 'Supprimer un lien',
         edit: 'Modifier',
         textToDisplay: 'Texte à afficher',
-        url: 'URL du lien',
+        url: 'Introduis le lien',
         openInNewWindow: 'Ouvrir dans une nouvelle fenêtre'
       },
       table: {
@@ -58,7 +58,7 @@
       },
       style: {
         style: 'Style',
-        p: 'p',
+        p: 'Paragraphe',
         blockquote: 'Citation',
         pre: 'Code source',
         h1: 'Titre 1',

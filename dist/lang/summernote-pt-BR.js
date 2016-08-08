@@ -26,7 +26,7 @@
       },
       video: {
         video: 'Vídeo',
-        videoLink: 'Link para vídeo',
+        videoLink: 'Insira o link do vídeo',
         insert: 'Inserir vídeo',
         url: 'URL do vídeo?',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion ou Youku)'
@@ -37,7 +37,7 @@
         unlink: 'Remover link',
         edit: 'Editar',
         textToDisplay: 'Texto para exibir',
-        url: 'Para qual URL esse link leva?',
+        url: 'Insira o link',
         openInNewWindow: 'Abrir em uma nova janela'
       },
       table: {
@@ -56,7 +56,8 @@
         h3: 'Título 3',
         h4: 'Título 4',
         h5: 'Título 5',
-        h6: 'Título 6'
+        h6: 'Título 6',
+        p: 'Parágrafo'
       },
       lists: {
         unordered: 'Lista com marcadores',

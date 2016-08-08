@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-08-05T09:38Z
+ * Date: 2016-08-08T09:01Z
  */
 (function (factory) {
   /* global define */
@@ -2068,7 +2068,7 @@
         video: 'Video',
         videoLink: 'Video Link',
         insert: 'Insert Video',
-        url: 'Video URL?',
+        url: 'Type the video URL',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion or Youku)'
       },
       link: {
@@ -2077,7 +2077,7 @@
         unlink: 'Unlink',
         edit: 'Edit',
         textToDisplay: 'Text to display',
-        url: 'To what URL should this link go?',
+        url: 'Enter a URL',
         openInNewWindow: 'Open in new window'
       },
       table: {
@@ -2096,10 +2096,11 @@
         h3: 'Header 3',
         h4: 'Header 4',
         h5: 'Header 5',
-        h6: 'Header 6'
+        h6: 'Header 6',
+        p: 'Paragraph'
       },
       lists: {
-        unordered: 'Unordered list',
+        unordered: 'Bulleted list',
         ordered: 'Ordered list'
       },
       options: {
