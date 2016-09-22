@@ -27,7 +27,7 @@
       },
       video: {
         video: 'Video',
-        videoLink: 'Inserisci il link del video',
+        videoLink: 'Collegamento ad un Video',
         insert: 'Inserisci Video',
         url: 'URL del Video',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion o Youku)'
@@ -38,7 +38,7 @@
         unlink: 'Elimina collegamento',
         edit: 'Modifica collegamento',
         textToDisplay: 'Testo del collegamento',
-        url: 'Inserisci il link',
+        url: 'URL del collegamento',
         openInNewWindow: 'Apri in una nuova finestra'
       },
       table: {
@@ -49,7 +49,7 @@
       },
       style: {
         style: 'Stili',
-        p: 'Paragrafo',
+        p: 'pe',
         blockquote: 'Citazione',
         pre: 'Codice',
         h1: 'Titolo 1',
@@ -60,7 +60,7 @@
         h6: 'Titolo 6'
       },
       lists: {
-        unordered: 'Elenco puntato',
+        unordered: 'Elenco non ordinato',
         ordered: 'Elenco ordinato'
       },
       options: {

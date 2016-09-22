@@ -25,13 +25,13 @@ module.exports = function (grunt) {
       version: '8.0',
       platform: 'windows XP'
     },
-    */
     'SL_IE9': {
       base: 'SauceLabs',
       browserName: 'internet explorer',
       version: '9.0',
       platform: 'windows 7'
     },
+    */
     'SL_IE10': {
       base: 'SauceLabs',
       browserName: 'internet explorer',
@@ -44,12 +44,14 @@ module.exports = function (grunt) {
       version: '11.0',
       platform: 'windows 8.1'
     },
+    /*
     'SL_EDGE': {
       base: 'SauceLabs',
       browserName: 'microsoftedge',
       version: '20',
       platform: 'windows 10'
     },
+    */
     'SL_CHROME': {
       base: 'SauceLabs',
       browserName: 'chrome',
@@ -286,7 +288,7 @@ module.exports = function (grunt) {
   // load all grunts/*.js
   grunt.loadTasks('grunts');
 
-  // server: runt server for development
+  // server: run server for development
   grunt.registerTask('server', ['connect', 'watch']);
 
   // lint

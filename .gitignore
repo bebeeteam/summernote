@@ -22,4 +22,6 @@ coverage/
 
 .idea/
 *.iml
-/.project
+
+# NuGet
+build/

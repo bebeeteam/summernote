@@ -50,6 +50,13 @@ define([
     };
 
     /**
+     * toggle update button
+     */
+    this.toggleLinkBtn = function ($linkBtn, $linkText, $linkUrl) {
+      ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
+    };
+
+    /**
      * Show link dialog and set event handlers on dialog controls.
      *
      * @param {Object} linkInfo
@@ -100,8 +107,7 @@ define([
             toggleSubmitBtn();
           }).val(linkInfo.url).trigger('focus');
 
-          ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
-
+          self.toggleLinkBtn($linkBtn, $linkText, $linkUrl);
           self.bindEnterKey($linkUrl, $linkBtn);
           self.bindEnterKey($linkText, $linkBtn);
 
@@ -125,8 +131,8 @@ define([
 
         ui.onDialogHidden(self.$dialog, function () {
           // detach events
-          $linkText.off('input keypress');
-          $linkUrl.off('input keypress');
+          $linkText.off('input paste keypress');
+          $linkUrl.off('input paste keypress');
           $linkBtn.off('click');
 
           if (deferred.state() === 'pending') {

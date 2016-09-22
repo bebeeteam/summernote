@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-08-08T09:01Z
+ * Date: 2016-08-07T05:11Z
  */
 (function (factory) {
   /* global define */
@@ -140,6 +140,35 @@
       }).join('');
     };
 
+    /**
+     * Returns a function, that, as long as it continues to be invoked, will not
+     * be triggered. The function will be called after it stops being called for
+     * N milliseconds. If `immediate` is passed, trigger the function on the
+     * leading edge, instead of the trailing.
+     * @param {Function} func
+     * @param {Number} wait
+     * @param {Boolean} immediate
+     * @return {Function}
+     */
+    var debounce = function (func, wait, immediate) {
+      var timeout;
+      return function () {
+        var context = this, args = arguments;
+        var later = function () {
+          timeout = null;
+          if (!immediate) {
+            func.apply(context, args);
+          }
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) {
+          func.apply(context, args);
+        }
+      };
+    };
+
     return {
       eq: eq,
       eq2: eq2,
@@ -153,7 +182,8 @@
       uniqueId: uniqueId,
       rect2bnd: rect2bnd,
       invertObject: invertObject,
-      namespaceToCamel: namespaceToCamel
+      namespaceToCamel: namespaceToCamel,
+      debounce: debounce
     };
   })();
 
@@ -294,7 +324,7 @@
     };
   
     /**
-     * returns a copy of the array with all falsy values removed
+     * returns a copy of the array with all false values removed
      *
      * @param {Array} array - array
      * @param {Function} fn - predicate function for cluster rule
@@ -1703,7 +1733,6 @@
       return function (event) {
         event.preventDefault();
         self.invoke(namespace, value || $(event.target).closest('[data-value]').data('value'));
-        self.invoke('buttons.updateCurrentStyle');
       };
     };
 
@@ -1744,7 +1773,6 @@
       options = $.extend({}, $.summernote.options, options);
       options.langInfo = $.extend(true, {}, $.summernote.lang['en-US'], $.summernote.lang[options.lang]);
       options.icons = $.extend(true, {}, $.summernote.options.icons, options.icons);
-      options.popover = $.extend(true, {}, $.summernote.options.popover, options.popover);
 
       this.each(function (idx, note) {
         var $note = $(note);
@@ -2044,7 +2072,7 @@
         size: 'Font Size'
       },
       image: {
-        image: 'Image',
+        image: 'Picture',
         insert: 'Insert Image',
         resizeFull: 'Resize Full',
         resizeHalf: 'Resize Half',
@@ -2068,7 +2096,7 @@
         video: 'Video',
         videoLink: 'Video Link',
         insert: 'Insert Video',
-        url: 'Type the video URL',
+        url: 'Video URL?',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion or Youku)'
       },
       link: {
@@ -2077,7 +2105,7 @@
         unlink: 'Unlink',
         edit: 'Edit',
         textToDisplay: 'Text to display',
-        url: 'Enter a URL',
+        url: 'To what URL should this link go?',
         openInNewWindow: 'Open in new window'
       },
       table: {
@@ -2096,11 +2124,10 @@
         h3: 'Header 3',
         h4: 'Header 4',
         h5: 'Header 5',
-        h6: 'Header 6',
-        p: 'Paragraph'
+        h6: 'Header 6'
       },
       lists: {
-        unordered: 'Bulleted list',
+        unordered: 'Unordered list',
         ordered: 'Ordered list'
       },
       options: {
@@ -2754,11 +2781,8 @@
           if (!dom.isInline(topAncestor)) {
             topAncestor = ancestors[ancestors.length - 2] || rng.sc.childNodes[rng.so];
           }
-        } else if (rng.so > 0) {
-          topAncestor = rng.sc.childNodes[rng.so - 1];
-        }
-        else {
-          topAncestor = rng.sc;
+        } else {
+          topAncestor = rng.sc.childNodes[rng.so > 0 ? rng.so - 1 : 0];
         }
 
         // siblings not in paragraph
@@ -2767,23 +2791,8 @@
 
         // wrap with paragraph
         if (inlineSiblings.length) {
-          var startNode = so > 0 ? sc.childNodes[so - 1] : sc;
-          var endNode = eo > 0 ? ec.childNodes[eo - 1] : ec;
-
           var para = dom.wrap(list.head(inlineSiblings), 'p');
           dom.appendChildNodes(para, list.tail(inlineSiblings));
-
-          //update range
-          var startNodeIndex = inlineSiblings.indexOf(startNode);
-          if (startNodeIndex !== -1) {
-            sc = para;
-            so = startNodeIndex + 1;
-            var endNodeIndex = inlineSiblings.indexOf(endNode);
-            if (endNodeIndex !== -1) {
-              ec = para;
-              eo = endNodeIndex + 1;
-            }
-          }
         }
 
         return this.normalize();
@@ -3809,9 +3818,9 @@
       // [workaround] IE doesn't have input events for contentEditable
       // - see: https://goo.gl/4bfIvA
       var changeEventName = agent.isMSIE ? 'DOMCharacterDataModified DOMSubtreeModified DOMNodeInserted' : 'input';
-      $editable.on(changeEventName, function () {
+      $editable.on(changeEventName, func.debounce(function () {
         context.triggerEvent('change', $editable.html());
-      });
+      }, 250));
 
       $editor.on('focusin', function (event) {
         context.triggerEvent('focusin', event);
@@ -4083,7 +4092,7 @@
           if (typeof param === 'string') {
             $image.attr('data-filename', param);
           }
-          //$image.css('width', Math.min($editable.width(), $image.width()));
+          $image.css('width', Math.min($editable.width(), $image.width()));
         }
 
         $image.show();
@@ -4303,12 +4312,10 @@
      */
     this.createLink = this.wrapCommand(function (linkInfo) {
       var linkUrl = linkInfo.url;
-      var linkNode = linkInfo.node;
       var linkText = linkInfo.text;
       var isNewWindow = linkInfo.isNewWindow;
       var rng = linkInfo.range || this.createRange();
-      var rebuild = linkNode || rng.toString() !== linkText;
-      var contents = linkNode || linkText;
+      var isTextChanged = rng.toString() !== linkText;
 
       // handle spaced urls from input
       if (typeof linkUrl === 'string') {
@@ -4320,10 +4327,9 @@
       }
 
       var anchors = [];
-      if (rebuild) {
+      if (isTextChanged) {
         rng = rng.deleteContents();
-        var anchor = rng.insertNode($('<A></A>')[0]);
-        $(anchor).append(contents);
+        var anchor = rng.insertNode($('<A>' + linkText + '</A>')[0]);
         anchors.push(anchor);
       } else {
         anchors = style.styleNodes(rng, {
@@ -4369,45 +4375,14 @@
      * @return {String} [return.url=""]
      */
     this.getLinkInfo = function () {
-      var rng, node = null, $anchor = $();
+      var rng = this.createRange().expand(dom.isAnchor);
 
-      var $target = $(this.restoreTarget());
-      if ($target.is('img')) {
-        //img selected and clicked in link toolbar button
-        var $parent = $target.parent();
-        if ($parent.is('a')) {
-          $anchor = $parent;
-          rng = range.createFromNode($parent.get(0));
-        }
-        else {
-          rng = range.createFromNode($target.get(0));
-        }
-        node = $target.get(0);
-      }
-      else {
-        rng = this.createRange().expand(dom.isAnchor);
-
-        // Get the first anchor on range(for edit).
-        $anchor = $(list.head(rng.nodes(dom.isAnchor)));
-
-        if ($anchor.size()) {
-          if ($anchor.find('img').size()) {
-            node = $anchor.contents();
-          }
-        }
-        else {
-          rng = this.createRange().expand(dom.isImg);
-          var $img = $(list.head(rng.nodes(dom.isImg)));
-          if ($img.size()) {
-            node = $img.get(0);
-          }
-        }
-      }
+      // Get the first anchor on range(for edit).
+      var $anchor = $(list.head(rng.nodes(dom.isAnchor)));
 
       return {
         range: rng,
-        node: node,
-        text: node ? null : rng.toString(),
+        text: rng.toString(),
         isNewWindow: $anchor.length ? $anchor.attr('target') === '_blank' : false,
         url: $anchor.length ? $anchor.attr('href') : ''
       };
@@ -4447,8 +4422,6 @@
      */
     this.floatMe = this.wrapCommand(function (value) {
       var $target = $(this.restoreTarget());
-      $target.toggleClass('note-float-left', value === 'left');
-      $target.toggleClass('note-float-right', value === 'right');
       $target.css('float', value);
     });
 
@@ -4471,7 +4444,7 @@
      */
     this.resizeTo = function (pos, $target, bKeepRatio) {
       var imageSize;
-      if (false && bKeepRatio) {
+      if (bKeepRatio) {
         var newRatio = pos.y / pos.x;
         var ratio = $target.data('ratio');
         imageSize = {
@@ -4480,16 +4453,10 @@
         };
       } else {
         imageSize = {
-          width: pos.x
-          //height: pos.y
+          width: pos.x,
+          height: pos.y
         };
       }
-
-      var $parent = $target.parent();
-      while ($parent.css('display') !== 'block' && $parent.parent().length) {
-        $parent = $parent.parent();
-      }
-      imageSize.width = parseInt((imageSize.width / $parent.width()) * 100, 10) + '%';
 
       $target.css(imageSize);
     };
@@ -4640,6 +4607,7 @@
     var $editable = context.layoutInfo.editable;
     var options = context.options;
     var lang = options.langInfo;
+    var documentEventHandlers = {};
 
     var $dropzone = $([
       '<div class="note-dropzone">',
@@ -4647,15 +4615,23 @@
       '</div>'
     ].join('')).prependTo($editor);
 
+    var detachDocumentEvent = function () {
+      Object.keys(documentEventHandlers).forEach(function (key) {
+        $document.off(key.substr(2).toLowerCase(), documentEventHandlers[key]);
+      });
+      documentEventHandlers = {};
+    };
+
     /**
      * attach Drag and Drop Events
      */
     this.initialize = function () {
       if (options.disableDragAndDrop) {
         // prevent default drop event
-        $document.on('drop', function (e) {
+        documentEventHandlers.onDrop = function (e) {
           e.preventDefault();
-        });
+        };
+        $document.on('drop', documentEventHandlers.onDrop);
       } else {
         this.attachDragAndDropEvent();
       }
@@ -4668,9 +4644,7 @@
       var collection = $(),
           $dropzoneMessage = $dropzone.find('.note-dropzone-message');
 
-      // show dropzone on dragenter when dragging a object to document
-      // -but only if the editor is visible, i.e. has a positive width and height
-      $document.on('dragenter', function (e) {
+      documentEventHandlers.onDragenter = function (e) {
         var isCodeview = context.invoke('codeview.isActivated');
         var hasEditorSize = $editor.width() > 0 && $editor.height() > 0;
         if (!isCodeview && !collection.length && hasEditorSize) {
@@ -4680,15 +4654,25 @@
           $dropzoneMessage.text(lang.image.dragImageHere);
         }
         collection = collection.add(e.target);
-      }).on('dragleave', function (e) {
+      };
+
+      documentEventHandlers.onDragleave = function (e) {
         collection = collection.not(e.target);
         if (!collection.length) {
           $editor.removeClass('dragover');
         }
-      }).on('drop', function () {
+      };
+
+      documentEventHandlers.onDrop = function () {
         collection = $();
         $editor.removeClass('dragover');
-      });
+      };
+
+      // show dropzone on dragenter when dragging a object to document
+      // -but only if the editor is visible, i.e. has a positive width and height
+      $document.on('dragenter', documentEventHandlers.onDragenter)
+        .on('dragleave', documentEventHandlers.onDragleave)
+        .on('drop', documentEventHandlers.onDrop);
 
       // change dropzone's message on hover.
       $dropzone.on('dragenter', function () {
@@ -4721,6 +4705,10 @@
           });
         }
       }).on('dragover', false); // prevent default dragover event
+    };
+
+    this.destroy = function () {
+      detachDocumentEvent();
     };
   };
 
@@ -4993,7 +4981,6 @@
       var $selection = this.$handle.find('.note-control-selection');
 
       context.invoke('imagePopover.update', target);
-      context.invoke('videoPopover.update', target);
 
       if (isImage) {
         var $image = $(target);
@@ -5154,18 +5141,11 @@
     var invertedKeyMap = func.invertObject(options.keyMap[agent.isMac ? 'mac' : 'pc']);
 
     var representShortcut = this.representShortcut = function (editorMethod) {
-      //No mostrar el texto de shortcuts aunque estén habiltados.
-      //No se pueden deshabilitar debido a un bug:
-      //https://github.com/summernote/summernote/issues/1812
-      if (true) {
-        return '';
-      }
-
       var shortcut = invertedKeyMap[editorMethod];
       if (!options.shortcuts || !shortcut) {
         return '';
       }
-
+      
       if (agent.isMac) {
         shortcut = shortcut.replace('CMD', '⌘').replace('SHIFT', '⇧');
       }
@@ -5182,7 +5162,6 @@
       this.addToolbarButtons();
       this.addImagePopoverButtons();
       this.addLinkPopoverButtons();
-      this.addVideoPopoverButtons();
       this.fontInstalledMap = {};
     };
 
@@ -5659,7 +5638,7 @@
       context.memo('button.floatLeft', function () {
         return ui.button({
           contents: ui.icon(options.icons.alignLeft),
-          tooltip: lang.paragraph.left,
+          tooltip: lang.image.floatLeft,
           click: context.createInvokeHandler('editor.floatMe', 'left')
         }).render();
       });
@@ -5667,15 +5646,15 @@
       context.memo('button.floatRight', function () {
         return ui.button({
           contents: ui.icon(options.icons.alignRight),
-          tooltip: lang.paragraph.right,
+          tooltip: lang.image.floatRight,
           click: context.createInvokeHandler('editor.floatMe', 'right')
         }).render();
       });
 
       context.memo('button.floatNone', function () {
         return ui.button({
-          contents: ui.icon(options.icons.alignCenter),
-          tooltip: lang.paragraph.center,
+          contents: ui.icon(options.icons.alignJustify),
+          tooltip: lang.image.floatNone,
           click: context.createInvokeHandler('editor.floatMe', 'none')
         }).render();
       });
@@ -5704,16 +5683,6 @@
           contents: ui.icon(options.icons.unlink),
           tooltip: lang.link.unlink,
           click: context.createInvokeHandler('editor.unlink')
-        }).render();
-      });
-    };
-
-    this.addVideoPopoverButtons = function () {
-      context.memo('button.videoOpen', function () {
-        return ui.button({
-          contents: ui.icon(options.icons.video),
-          tooltip: lang.video.video,
-          click: context.createInvokeHandler('videoPopover.openUrl')
         }).render();
       });
     };
@@ -5922,13 +5891,13 @@
     this.initialize = function () {
       var $container = options.dialogsInBody ? $(document.body) : $editor;
 
-      var body = '<div class="form-group note-group-link-text">' +
+      var body = '<div class="form-group">' +
                    '<label>' + lang.link.textToDisplay + '</label>' +
-                   '<input class="note-link-text form-control" type="text" required />' +
+                   '<input class="note-link-text form-control" type="text" />' +
                  '</div>' +
                  '<div class="form-group">' +
                    '<label>' + lang.link.url + '</label>' +
-                   '<input class="note-link-url form-control" type="url" value="" placeholder="http://" required />' +
+                   '<input class="note-link-url form-control" type="text" value="http://" />' +
                  '</div>' +
                  (!options.disableLinkTarget ?
                    '<div class="checkbox">' +
@@ -5960,6 +5929,13 @@
     };
 
     /**
+     * toggle update button
+     */
+    this.toggleLinkBtn = function ($linkBtn, $linkText, $linkUrl) {
+      ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
+    };
+
+    /**
      * Show link dialog and set event handlers on dialog controls.
      *
      * @param {Object} linkInfo
@@ -5972,46 +5948,41 @@
         $linkBtn = self.$dialog.find('.note-link-btn'),
         $openInNewWindow = self.$dialog.find('input[type=checkbox]');
 
-        var toggleSubmitBtn = function () {
-          return ui.toggleBtn($linkBtn, (linkInfo.node || $linkText.get(0).checkValidity()) && $linkUrl.get(0).checkValidity());
-        };
-
         ui.onDialogShown(self.$dialog, function () {
           context.triggerEvent('dialog.shown');
 
-          self.$dialog.find('.note-group-link-text').toggleClass('hidden', !!linkInfo.node);
+          // if no url was given, copy text to url
+          if (!linkInfo.url) {
+            linkInfo.url = linkInfo.text;
+          }
 
           $linkText.val(linkInfo.text);
 
-          $linkText.on('input', function () {
+          var handleLinkTextUpdate = function () {
+            self.toggleLinkBtn($linkBtn, $linkText, $linkUrl);
             // if linktext was modified by keyup,
             // stop cloning text from linkUrl
             linkInfo.text = $linkText.val();
-            toggleSubmitBtn();
+          };
+
+          $linkText.on('input', handleLinkTextUpdate).on('paste', function () {
+            setTimeout(handleLinkTextUpdate, 0);
           });
 
-          // if no url was given, copy text to url
-          if (!linkInfo.url) {
-            if ($('<input>').attr('type', 'url').val(linkInfo.text).get(0).checkValidity()) {
-              //only copy if it's valid (note that empty string is valid because of missing required attribute)
-              linkInfo.url = linkInfo.text;
-            }
-            else {
-              linkInfo.url = '';
-            }
-          }
-
-          $linkUrl.on('input', function () {
+          var handleLinkUrlUpdate = function () {
+            self.toggleLinkBtn($linkBtn, $linkText, $linkUrl);
             // display same link on `Text to display` input
             // when create a new link
             if (!linkInfo.text) {
               $linkText.val($linkUrl.val());
             }
-            toggleSubmitBtn();
+          };
+
+          $linkUrl.on('input', handleLinkUrlUpdate).on('paste', function () {
+            setTimeout(handleLinkUrlUpdate, 0);
           }).val(linkInfo.url).trigger('focus');
 
-          ui.toggleBtn($linkBtn, $linkText.val() && $linkUrl.val());
-
+          self.toggleLinkBtn($linkBtn, $linkText, $linkUrl);
           self.bindEnterKey($linkUrl, $linkBtn);
           self.bindEnterKey($linkText, $linkBtn);
 
@@ -6024,19 +5995,16 @@
               range: linkInfo.range,
               url: $linkUrl.val(),
               text: $linkText.val(),
-              isNewWindow: true, //los enlaces siempre se abren en nueva ventana
-              node: linkInfo.node
+              isNewWindow: $openInNewWindow.is(':checked')
             });
             self.$dialog.modal('hide');
           });
-
-          toggleSubmitBtn();
         });
 
         ui.onDialogHidden(self.$dialog, function () {
           // detach events
-          $linkText.off('input keypress');
-          $linkUrl.off('input keypress');
+          $linkText.off('input paste keypress');
+          $linkUrl.off('input paste keypress');
           $linkBtn.off('click');
 
           if (deferred.state() === 'pending') {
@@ -6111,22 +6079,15 @@
       var rng = context.invoke('editor.createRange');
       if (rng.isCollapsed() && rng.isOnAnchor()) {
         var anchor = dom.ancestor(rng.sc, dom.isAnchor);
-        var $anchor = $(anchor);
-        if ($anchor.find('img').size()) {
-          //don't show link popover if contains an image (prevents appear both popovers)
-          this.hide();
-        }
-        else {
-          var href = $anchor.attr('href');
-          this.$popover.find('a').attr('href', href).html(href);
+        var href = $(anchor).attr('href');
+        this.$popover.find('a').attr('href', href).html(href);
 
-          var pos = dom.posFromPlaceholder(anchor);
-          this.$popover.css({
-            display: 'block',
-            left: pos.left,
-            top: pos.top
-          });
-        }
+        var pos = dom.posFromPlaceholder(anchor);
+        this.$popover.css({
+          display: 'block',
+          left: pos.left,
+          top: pos.top
+        });
       } else {
         this.hide();
       }
@@ -6158,8 +6119,7 @@
 
       var body = '<div class="form-group note-group-select-from-files">' +
                    '<label>' + lang.image.selectFromFiles + '</label>' +
-                   '<input class="note-image-input form-control" type="file" name="files" ' +
-                      'accept="image/jpeg, image/png" />' +
+                   '<input class="note-image-input form-control" type="file" name="files" accept="image/*" multiple="multiple" />' +
                    imageLimitation +
                  '</div>' +
                  '<div class="form-group note-group-image-url" style="overflow:auto;">' +
@@ -6258,19 +6218,12 @@
   };
 
   var ImagePopover = function (context) {
-    var self = this;
     var ui = $.summernote.ui;
 
     var options = context.options;
 
     this.shouldInitialize = function () {
       return !list.isEmpty(options.popover.image);
-    };
-
-    this.events = {
-      'summernote.keydown': function (we, e) {
-        self.handleKeydown(e);
-      }
     };
 
     this.initialize = function () {
@@ -6286,21 +6239,14 @@
       this.$popover.remove();
     };
 
-    this.isVisible = function () {
-      return this.$popover.is(':visible');
-    };
-
     this.update = function (target) {
-      if (dom.isImg(target) && !$(target).hasClass('note-video-thumb')) {
+      if (dom.isImg(target)) {
         var pos = dom.posFromPlaceholder(target);
         this.$popover.css({
           display: 'block',
           left: pos.left,
           top: pos.top
         });
-
-        //be sure editor has focus to handle key events
-        context.invoke('editor.focus');
       } else {
         this.hide();
       }
@@ -6308,14 +6254,6 @@
 
     this.hide = function () {
       this.$popover.hide();
-    };
-
-    this.handleKeydown = function (e) {
-      if (list.contains([key.code.BACKSPACE], e.keyCode)) {
-        if (this.isVisible()) {
-          context.invoke('editor.removeMedia');
-        }
-      }
     };
   };
 
@@ -6358,63 +6296,18 @@
     };
 
     this.createVideoNode = function (url) {
-      var def = $.Deferred();
       // video url patterns(youtube, instagram, vimeo, dailymotion, youku, mp4, ogg, webm)
       var ytRegExp = /^(?:https?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;
       var ytMatch = url.match(ytRegExp);
-
-      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
-      var vimMatch = url.match(vimRegExp);
-
-      var $img = $('<img>').addClass('note-video-thumb');
-      var urlRequest = null;
-
-      if (ytMatch && ytMatch[1].length === 11) {
-        $img.attr('data-note-video', 1);
-        $img.attr('data-provider', 'youtube');
-        $img.attr('data-id', ytMatch[1]);
-        urlRequest = 'https://www.youtube.com/watch?v=' + ytMatch[1];
-      }
-      else if (vimMatch && vimMatch[3].length) {
-        $img.attr('data-note-video', 1);
-        $img.attr('data-provider', 'vimeo');
-        $img.attr('data-id', vimMatch[3]);
-        urlRequest = 'https://vimeo.com/' + vimMatch[3];
-      }
-      else {
-        def.reject();
-        return def.promise();
-      }
-
-      $.ajax({
-        url: options.videoThumbAjaxUrl.toString(),
-        data: {
-          url: urlRequest
-        },
-        dataType: 'json',
-        success: function (json) {
-          if (json.src) {
-            $img.attr('src', json.src);
-            def.resolve($img.get(0));
-          }
-          else {
-            def.reject();
-          }
-        },
-        fail: function () {
-          def.reject();
-        }
-      });
-
-      return def.promise();
-
-      /*
 
       var igRegExp = /(?:www\.|\/\/)instagram\.com\/p\/(.[a-zA-Z0-9_-]*)/;
       var igMatch = url.match(igRegExp);
 
       var vRegExp = /\/\/vine\.co\/v\/([a-zA-Z0-9]+)/;
       var vMatch = url.match(vRegExp);
+
+      var vimRegExp = /\/\/(player\.)?vimeo\.com\/([a-z]*\/)*([0-9]{6,11})[?]?.*/;
+      var vimMatch = url.match(vimRegExp);
 
       var dmRegExp = /.+dailymotion.com\/(video|hub)\/([^_]+)[^#]*(#video=([^_&]+))?/;
       var dmMatch = url.match(dmRegExp);
@@ -6479,8 +6372,6 @@
       $video.addClass('note-video-clip');
 
       return $video[0];
-
-      */
     };
 
     this.show = function () {
@@ -6492,10 +6383,12 @@
         context.invoke('editor.restoreRange');
 
         // build node
-        self.createVideoNode(url).done(function ($node) {
+        var $node = self.createVideoNode(url);
+
+        if ($node) {
           // insert video node
           context.invoke('editor.insertNode', $node);
-        });
+        }
       }).fail(function () {
         context.invoke('editor.restoreRange');
       });
@@ -6539,85 +6432,6 @@
 
         ui.showDialog(self.$dialog);
       });
-    };
-  };
-
-  var VideoPopover = function (context) {
-    var self = this;
-    var ui = $.summernote.ui;
-
-    var options = context.options;
-
-    this.shouldInitialize = function () {
-      return !list.isEmpty(options.popover.video);
-    };
-
-    this.events = {
-      'summernote.keydown': function (we, e) {
-        self.handleKeydown(e);
-      }
-    };
-
-    this.initialize = function () {
-      this.$popover = ui.popover({
-        className: 'note-video-popover'
-      }).render().appendTo('body');
-      var $content = this.$popover.find('.popover-content');
-
-      context.invoke('buttons.build', $content, options.popover.video);
-    };
-
-    this.destroy = function () {
-      this.$popover.remove();
-    };
-
-    this.isVisible = function () {
-      return this.$popover.is(':visible');
-    };
-
-    this.update = function (target) {
-      if ($(target).hasClass('note-video-thumb')) {
-        var pos = dom.posFromPlaceholder(target);
-        this.$popover.css({
-          display: 'block',
-          left: pos.left,
-          top: pos.top
-        });
-
-        //be sure editor has focus to handle key events
-        context.invoke('editor.focus');
-      } else {
-        this.hide();
-      }
-    };
-
-    this.hide = function () {
-      this.$popover.hide();
-    };
-
-    this.handleKeydown = function (e) {
-      if (list.contains([key.code.BACKSPACE], e.keyCode)) {
-        if (this.isVisible()) {
-          context.invoke('editor.removeMedia');
-        }
-      }
-    };
-
-    this.openUrl = function () {
-      var $target = $(context.invoke('editor.restoreTarget'));
-      var provider = $target.attr('data-provider');
-      var url = null;
-      var id = $target.attr('data-id');
-      if (provider === 'youtube') {
-        url = 'https://youtu.be/' + id;
-      }
-      else if (provider === 'vimeo') {
-        url = 'https://vimeo.com/' + id;
-      }
-
-      if (url) {
-        window.open(url);
-      }
     };
   };
 
@@ -7020,13 +6834,12 @@
         'imageDialog': ImageDialog,
         'imagePopover': ImagePopover,
         'videoDialog': VideoDialog,
-        'videoPopover': VideoPopover,
         'helpDialog': HelpDialog,
         'airPopover': AirPopover
       },
 
       buttons: {},
-
+      
       lang: 'en-US',
 
       // toolbar
@@ -7046,11 +6859,6 @@
         image: [
           ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
           ['float', ['floatLeft', 'floatRight', 'floatNone']],
-          ['link', ['linkDialogShow', 'unlink']],
-          ['remove', ['removeMedia']]
-        ],
-        video: [
-          ['link', ['videoOpen']],
           ['remove', ['removeMedia']]
         ],
         link: [
