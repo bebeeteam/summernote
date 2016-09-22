@@ -36,18 +36,18 @@
       },
       video: {
         video: 'Vídeo',
-        videoLink: 'Link del vídeo',
+        videoLink: 'Introduce el enlace del vídeo',
         insert: 'Insertar vídeo',
         url: '¿URL del vídeo?',
         providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion o Youku)'
       },
       link: {
-        link: 'Link',
-        insert: 'Insertar link',
-        unlink: 'Quitar link',
+        link: 'Enlace',
+        insert: 'Insertar enlace',
+        unlink: 'Quitar enlace',
         edit: 'Editar',
         textToDisplay: 'Texto para mostrar',
-        url: '¿Hacia que URL lleva el link?',
+        url: 'Introduce el enlace',
         openInNewWindow: 'Abrir en una nueva ventana'
       },
       table: {
@@ -58,7 +58,7 @@
       },
       style: {
         style: 'Estilo',
-        p: 'p',
+        p: 'Párrafo',
         blockquote: 'Cita',
         pre: 'Código',
         h1: 'Título 1',
@@ -69,7 +69,7 @@
         h6: 'Título 6'
       },
       lists: {
-        unordered: 'Lista desordenada',
+        unordered: 'Lista ordenada',
         ordered: 'Lista ordenada'
       },
       options: {
