@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-09-22T14:53Z
+ * Date: 2016-09-22T16:23Z
  */
 (function (factory) {
   /* global define */
@@ -1137,6 +1137,21 @@
     };
 
     /**
+     * returns whether point has space or not.
+     *
+     * @param {Point} point
+     * @return {Boolean}
+     */
+    var isSpacePoint = function (point) {
+      if (!isText(point.node)) {
+        return false;
+      }
+
+      var ch = point.node.nodeValue.charAt(point.offset - 1);
+      return ch === ' ' || ch === NBSP_CHAR;
+    };
+
+    /**
      * @method walkPoint
      *
      * @param {BoundaryPoint} startPoint
@@ -1515,6 +1530,7 @@
       prevPointUntil: prevPointUntil,
       nextPointUntil: nextPointUntil,
       isCharPoint: isCharPoint,
+      isSpacePoint: isSpacePoint,
       walkPoint: walkPoint,
       ancestor: ancestor,
       singleChildAncestor: singleChildAncestor,
@@ -2891,6 +2907,83 @@
           endPoint.node,
           endPoint.offset
         );
+      };
+
+      /**
+       * returns range for words before cursor
+       *
+       * @param {Boolean} [findAfter] - find after cursor, default: false
+       * @return {WrappedRange}
+       */
+      this.getWordsRange = function (findAfter) {
+        var endPoint = this.getEndPoint();
+
+        var isNotTextPoint = function (point) {
+          return !dom.isCharPoint(point) && !dom.isSpacePoint(point);
+        };
+
+        if (isNotTextPoint(endPoint)) {
+          return this;
+        }
+
+        var startPoint = dom.prevPointUntil(endPoint, isNotTextPoint);
+
+        if (findAfter) {
+          endPoint = dom.nextPointUntil(endPoint, isNotTextPoint);
+        }
+
+        return new WrappedRange(
+            startPoint.node,
+            startPoint.offset,
+            endPoint.node,
+            endPoint.offset
+        );
+      };
+
+      /**
+       * returns range for words before cursor that match with a Regex
+       *
+       * example:
+       *  range: 'hi @Peter Pan'
+       *  regex: '/@[a-z ]+/i'
+       *  return range: '@Peter Pan'
+       *
+       * @param {RegExp} [regex]
+       * @return {WrappedRange|null}
+       */
+      this.getWordsMatchRange = function (regex) {
+        var endPoint = this.getEndPoint();
+
+        var startPoint = dom.prevPointUntil(endPoint, function (point) {
+          if (!dom.isCharPoint(point) && !dom.isSpacePoint(point)) {
+            return true;
+          }
+          var rng = new WrappedRange(
+              point.node,
+              point.offset,
+              endPoint.node,
+              endPoint.offset
+          );
+          var result = regex.exec(rng.toString());
+          return result && result.index === 0;
+        });
+
+        var rng = new WrappedRange(
+            startPoint.node,
+            startPoint.offset,
+            endPoint.node,
+            endPoint.offset
+        );
+
+        var text = rng.toString();
+        var result = regex.exec(text);
+
+        if (result && result[0].length === text.length) {
+          return rng;
+        }
+        else {
+          return null;
+        }
       };
   
       /**
@@ -6916,7 +7009,15 @@
       if ($item.length) {
         var node = this.nodeFromItem($item);
         this.lastWordRange.insertNode(node);
-        range.createFromNode(node).collapse().select();
+
+        if (context.options.hintSelect === 'next') {
+          var blank = document.createTextNode('');
+          $(node).after(blank);
+          range.createFromNodeBefore(blank).select();
+        }
+        else {
+          range.createFromNodeAfter(node).select();
+        }
 
         this.lastWordRange = null;
         this.hide();
@@ -7000,8 +7101,31 @@
           }
         }
       } else {
-        var wordRange = context.invoke('editor.createRange').getWordRange();
-        var keyword = wordRange.toString();
+        var range = context.invoke('editor.createRange');
+        var wordRange, keyword;
+        if (context.options.hintMode === 'words') {
+          wordRange = range.getWordsRange(range);
+          keyword = wordRange.toString();
+
+          hints.forEach(function (hint) {
+            if (hint.match.test(keyword)) {
+              wordRange = range.getWordsMatchRange(hint.match);
+              return false;
+            }
+          });
+
+          if (!wordRange) {
+            this.hide();
+            return;
+          }
+
+          keyword = wordRange.toString();
+        }
+        else {
+          wordRange = range.getWordRange();
+          keyword = wordRange.toString();
+        }
+
         if (hints.length && keyword) {
           this.$content.empty();
 
@@ -7124,6 +7248,9 @@
 
       // air mode: inline editor
       airMode: false,
+
+      hintMode: 'word', //allow: word, words
+      hintSelect: 'after', //allow: after, next
 
       width: null,
       height: null,
