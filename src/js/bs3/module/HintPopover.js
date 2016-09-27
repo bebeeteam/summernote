@@ -129,11 +129,11 @@ define([
       return node;
     };
 
-    this.createItemTemplates = function (hintIdx, items) {
+    this.createItemTemplates = function (hintIdx, items, keyword) {
       var hint = hints[hintIdx];
       return items.map(function (item, idx) {
         var $item = $('<div class="note-hint-item"/>');
-        $item.append(hint.template ? hint.template(item) : item + '');
+        $item.append(hint.template ? hint.template(item, keyword) : item + '');
         $item.data({
           'index': hintIdx,
           'item': item
@@ -178,7 +178,7 @@ define([
       this.searchKeyword(idx, keyword, function (items) {
         items = items || [];
         if (items.length) {
-          $group.html(self.createItemTemplates(idx, items));
+          $group.html(self.createItemTemplates(idx, items, keyword));
           self.show();
         }
       });
