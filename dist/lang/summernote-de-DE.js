@@ -2,7 +2,7 @@
   $.extend($.summernote.lang, {
     'de-DE': {
       font: {
-        bold: 'Fett',
+        bold: 'Fettdruck',
         italic: 'Kursiv',
         underline: 'Unterstreichen',
         clear: 'Zurücksetzen',
@@ -11,7 +11,7 @@
         size: 'Schriftgröße'
       },
       image: {
-        image: 'Grafik',
+        image: 'Bild',
         insert: 'Grafik einfügen',
         resizeFull: 'Originalgröße',
         resizeHalf: 'Größe 1/2',
@@ -53,7 +53,7 @@
         insert: 'Eine horizontale Linie einfügen'
       },
       style: {
-        style: 'Stil',
+        style: 'Schriftart',
         p: 'p',
         blockquote: 'Zitat',
         pre: 'Quellcode',
@@ -65,7 +65,7 @@
         h6: 'Überschrift 6'
       },
       lists: {
-        unordered: 'Aufzählung',
+        unordered: 'Liste',
         ordered: 'Nummerierung'
       },
       options: {
