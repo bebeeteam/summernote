@@ -6,7 +6,7 @@
  * Copyright 2013-2016 Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license./
  *
- * Date: 2016-10-06T15:36Z
+ * Date: 2016-10-21T09:15Z
  */
 (function (factory) {
   /* global define */
@@ -2210,6 +2210,12 @@
         'formatH6': 'Change current block\'s format as H6',
         'insertHorizontalRule': 'Insert horizontal rule',
         'linkDialog.show': 'Show Link Dialog'
+      },
+      bebee: {
+        quote: {
+          cite: 'Author in %s',
+          source: 'Source Title'
+        }
       },
       history: {
         undo: 'Undo',
