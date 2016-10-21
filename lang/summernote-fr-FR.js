@@ -105,11 +105,16 @@
         documentStyle: 'Style du document',
         extraKeys: 'Touches supplémentaires'
       },
+      bebee: {
+        quote: {
+          cite: 'Автор цитаты %s',
+          source: 'Название источника'
+        }
+      },
       history: {
         undo: 'Annuler la dernière action',
         redo: 'Restaurer la dernière action annulée'
       }
-
     }
   });
 })(jQuery);
