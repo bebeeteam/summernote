@@ -134,6 +134,12 @@
         'insertHorizontalRule': 'Insertar línea horizontal',
         'linkDialog.show': 'Mostrar panel enlaces'
       },
+      bebee: {
+        quote: {
+          cite: 'Autor en %s',
+          source: 'Título de la fuente'
+        }
+      },
       history: {
         undo: 'Deshacer',
         redo: 'Rehacer'

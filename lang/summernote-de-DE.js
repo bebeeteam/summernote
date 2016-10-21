@@ -100,6 +100,12 @@
         paragraphFormatting: 'Absatzformatierung',
         documentStyle: 'Dokumentenstil'
       },
+      bebee: {
+        quote: {
+          cite: 'Author in %s',
+          source: 'Quellentext'
+        }
+      },
       history: {
         undo: 'Rückgängig',
         redo: 'Wiederholen'

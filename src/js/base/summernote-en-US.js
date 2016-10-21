@@ -141,6 +141,12 @@ define([
         'insertHorizontalRule': 'Insert horizontal rule',
         'linkDialog.show': 'Show Link Dialog'
       },
+      bebee: {
+        quote: {
+          cite: 'Author in %s',
+          source: 'Source Title'
+        }
+      },
       history: {
         undo: 'Undo',
         redo: 'Redo'

@@ -95,6 +95,12 @@
         paragraphFormatting: 'Formattazione paragrafo',
         documentStyle: 'Stili'
       },
+      bebee: {
+        quote: {
+          cite: 'Autore di %s',
+          source: 'Titolo della fonte'
+        }
+      },
       history: {
         undo: 'Annulla',
         redo: 'Ripristina'

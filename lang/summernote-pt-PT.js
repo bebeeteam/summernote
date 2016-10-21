@@ -94,6 +94,12 @@
         paragraphFormatting: 'Formatação de parágrafo',
         documentStyle: 'Estilo de documento'
       },
+      bebee: {
+        quote: {
+          cite: 'Autor em %s',
+          source: 'Título da fonte'
+        }
+      },
       history: {
         undo: 'Desfazer',
         redo: 'Refazer'
